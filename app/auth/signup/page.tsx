@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { signIn, useSession, update } from 'next-auth/react'
+import { signIn, useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -118,9 +118,6 @@ export default function SignUpPage() {
       if (result?.ok) {
         // Wait for session to be updated
         await new Promise(resolve => setTimeout(resolve, 500))
-        
-        // Refresh the session to ensure it's up to date
-        await update()
         
         toast({
           title: "Benvenuto su Nomadiqe!",
