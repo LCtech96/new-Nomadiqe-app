@@ -83,11 +83,32 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async jwt({ token, user, account, trigger }) {
-      // On sign-in, fetch fresh user data from database
+      // On sign-in, always fetch fresh user data from database
+      // This ensures we have the latest onboardingStatus and onboardingStep
       if (user) {
-        token.role = (user as any).role
-        token.onboardingStatus = (user as any).onboardingStatus
-        token.onboardingStep = (user as any).onboardingStep
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { email: token.email! || (user as any).email }
+          })
+
+          if (dbUser) {
+            token.role = dbUser.role
+            token.onboardingStatus = dbUser.onboardingStatus
+            token.onboardingStep = dbUser.onboardingStep
+            token.sub = dbUser.id
+          } else {
+            // Fallback to user object if DB lookup fails
+            token.role = (user as any).role
+            token.onboardingStatus = (user as any).onboardingStatus
+            token.onboardingStep = (user as any).onboardingStep
+          }
+        } catch (error) {
+          console.error('Error fetching user data on sign-in:', error)
+          // Fallback to user object if DB lookup fails
+          token.role = (user as any).role
+          token.onboardingStatus = (user as any).onboardingStatus
+          token.onboardingStep = (user as any).onboardingStep
+        }
       }
 
       // Handle OAuth providers - always fetch fresh role from database

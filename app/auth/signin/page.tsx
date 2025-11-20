@@ -41,8 +41,9 @@ export default function SignInPage() {
           title: "Bentornato!",
           description: `Hai effettuato l'accesso come ${session?.user?.name || email}`,
         })
-        router.push('/dashboard')
-        router.refresh()
+        // Use window.location to force a full page reload and ensure middleware runs with fresh token
+        // The middleware will handle redirecting to /onboarding if needed
+        window.location.href = '/dashboard'
       }
     } catch (error) {
       toast({
