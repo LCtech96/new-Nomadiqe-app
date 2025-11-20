@@ -35,15 +35,29 @@ export default function SignInPage() {
           variant: "destructive",
         })
       } else if (result?.ok) {
-        // Get updated session
+        // Wait a bit for the session to be fully established
+        await new Promise(resolve => setTimeout(resolve, 500))
+        
+        // Get updated session to check onboarding status
         const session = await getSession()
+        
         toast({
           title: "Bentornato!",
           description: `Hai effettuato l'accesso come ${session?.user?.name || email}`,
         })
-        // Use window.location to force a full page reload and ensure middleware runs with fresh token
-        // The middleware will handle redirecting to /onboarding if needed
-        window.location.href = '/dashboard'
+        
+        // Determine redirect based on onboarding status
+        // If onboarding is not completed, go to onboarding, otherwise go to appropriate dashboard
+        if (session?.user?.onboardingStatus !== 'COMPLETED') {
+          window.location.href = '/onboarding'
+        } else {
+          // Redirect to role-specific dashboard
+          const dashboardUrl = session?.user?.role === 'HOST' ? '/dashboard/host'
+            : session?.user?.role === 'INFLUENCER' ? '/dashboard/influencer'
+            : session?.user?.role === 'GUEST' ? '/dashboard/guest'
+            : '/dashboard'
+          window.location.href = dashboardUrl
+        }
       }
     } catch (error) {
       toast({

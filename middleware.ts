@@ -28,7 +28,9 @@ export default withAuth(
     if (token && !pathname.startsWith('/onboarding') && !pathname.startsWith('/api/')) {
       // Redirect to onboarding if onboardingStatus is not COMPLETED (regardless of role)
       // Users may have any role (GUEST, HOST, INFLUENCER) during onboarding
-      if (token.onboardingStatus !== 'COMPLETED') {
+      // If onboardingStatus is undefined/null, treat as not completed
+      const onboardingStatus = token.onboardingStatus
+      if (!onboardingStatus || onboardingStatus !== 'COMPLETED') {
         // Only redirect if they're trying to access protected pages (not public pages)
         const publicPages = ['/', '/auth', '/search', '/experiences', '/property', '/terms', '/privacy']
         const isPublicPage = publicPages.some(page => pathname === page || pathname.startsWith(page + '/'))

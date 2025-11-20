@@ -70,6 +70,8 @@ export const authOptions: NextAuthOptions = {
             name: user.name,
             image: user.image,
             role: user.role,
+            onboardingStatus: user.onboardingStatus,
+            onboardingStep: user.onboardingStep,
           }
         } catch (error) {
           console.error('Error in authorize:', error)
