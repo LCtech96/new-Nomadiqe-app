@@ -41,9 +41,6 @@ export function PostComments({ postId, isOpen, onClose, onCommentAdded }: PostCo
   const [currentY, setCurrentY] = useState(0)
   const [deletingCommentId, setDeletingCommentId] = useState<string | null>(null)
 
-  // Debug log
-  console.log('PostComments rendered - isOpen:', isOpen, 'session:', !!session, 'comments:', comments.length)
-
   const fetchComments = useCallback(async () => {
     setIsLoading(true)
     try {

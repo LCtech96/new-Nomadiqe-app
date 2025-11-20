@@ -1,8 +1,8 @@
-import { withAuth } from "next-auth/middleware"
-import { NextResponse } from "next/server"
+import { withAuth, NextRequestWithAuth } from "next-auth/middleware"
+import { NextResponse, NextRequest } from "next/server"
 
 export default withAuth(
-  function middleware(req) {
+  function middleware(req: NextRequestWithAuth) {
     const { pathname } = req.nextUrl
     const token = req.nextauth.token
 
@@ -54,7 +54,13 @@ export default withAuth(
   },
   {
     callbacks: {
-      authorized: ({ token, req }) => {
+      authorized: ({ 
+        token, 
+        req 
+      }: { 
+        token: any
+        req: NextRequest 
+      }) => {
         const { pathname } = req.nextUrl
 
         // Allow access to public routes

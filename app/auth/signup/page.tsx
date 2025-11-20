@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { signIn, useSession } from 'next-auth/react'
+import { signIn, useSession, update } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -116,13 +116,19 @@ export default function SignUpPage() {
       })
 
       if (result?.ok) {
+        // Wait for session to be updated
+        await new Promise(resolve => setTimeout(resolve, 500))
+        
+        // Refresh the session to ensure it's up to date
+        await update()
+        
         toast({
           title: "Benvenuto su Nomadiqe!",
           description: "Il tuo account è stato creato con successo.",
         })
 
-        // Use NextAuth's built-in redirect after successful signin
-        // This ensures the session is fully established before navigation
+        // Use window.location to force a full page reload and ensure middleware runs with fresh token
+        // The middleware will handle redirecting to /onboarding if needed
         window.location.href = '/onboarding'
       } else {
         toast({
