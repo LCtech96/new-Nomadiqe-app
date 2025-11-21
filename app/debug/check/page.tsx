@@ -10,19 +10,19 @@ export default function DebugCheckPage() {
   const { data: session, status: sessionStatus } = useSession()
   const [checks, setChecks] = useState<Record<string, { status: 'checking' | 'success' | 'error', message: string }>>({})
   const [isRunning, setIsRunning] = useState(false)
-  const [isProduction, setIsProduction] = useState(false)
+  const [mounted, setMounted] = useState(false)
   
-  // Disable debug page in production
+  // Only render on client-side to avoid hydration mismatch
   useEffect(() => {
+    setMounted(true)
     // Check if we're in production (client-side check)
     if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-      setIsProduction(true)
       window.location.href = '/'
     }
   }, [])
   
-  // Don't render anything in production
-  if (isProduction) {
+  // Don't render anything until mounted (prevents hydration mismatch)
+  if (!mounted) {
     return null
   }
 
