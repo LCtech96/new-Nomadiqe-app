@@ -28,8 +28,20 @@ export default async function OnboardingIndexPage() {
       : user.role === 'INFLUENCER' ? '/dashboard/influencer'
       : user.role === 'GUEST' ? '/dashboard/guest'
       : '/dashboard'
+    console.log('[Onboarding Page] User has completed onboarding, redirecting to:', dashboardUrl, {
+      email: user.email,
+      role: user.role,
+      onboardingStatus: user.onboardingStatus
+    })
     redirect(dashboardUrl)
   }
+  
+  console.log('[Onboarding Page] User onboarding not completed:', {
+    email: user.email,
+    role: user.role,
+    onboardingStatus: user.onboardingStatus,
+    onboardingStep: user.onboardingStep
+  })
 
   // Route to the current step based on database state
   // This ensures users continue from where they left off

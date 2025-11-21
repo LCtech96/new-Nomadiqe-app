@@ -85,9 +85,67 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async jwt({ token, user, account, trigger }) {
-      // On sign-in, always fetch fresh user data from database
-      // This ensures we have the latest onboardingStatus and onboardingStep
-      if (user) {
+      // Handle OAuth providers first - they need special handling for new users
+      if (account?.provider && ['google', 'apple', 'facebook'].includes(account.provider)) {
+        try {
+          // Wait a bit longer for PrismaAdapter to finish creating user
+          await new Promise(resolve => setTimeout(resolve, 200))
+
+          let dbUser = await prisma.user.findUnique({
+            where: { email: token.email! }
+          })
+
+          // If user doesn't exist yet, wait a bit more and retry
+          if (!dbUser) {
+            await new Promise(resolve => setTimeout(resolve, 300))
+            dbUser = await prisma.user.findUnique({
+              where: { email: token.email! }
+            })
+          }
+
+          // If user was just created (new OAuth user), ensure defaults are set
+          if (dbUser) {
+            const isNewUser = !dbUser.onboardingStep && 
+                             (dbUser.onboardingStatus === 'PENDING' || !dbUser.onboardingStatus) &&
+                             (!dbUser.role || dbUser.role === 'GUEST')
+
+            if (isNewUser) {
+              dbUser = await prisma.user.update({
+                where: { email: token.email! },
+                data: {
+                  role: 'GUEST',
+                  onboardingStatus: 'PENDING',
+                  onboardingStep: 'profile-setup', // Set initial step for new users
+                  emailVerified: new Date()
+                }
+              })
+              console.log('[JWT] OAuth new user - Defaults set:', {
+                email: dbUser.email,
+                role: dbUser.role,
+                onboardingStatus: dbUser.onboardingStatus,
+                onboardingStep: dbUser.onboardingStep
+              })
+            }
+
+            token.role = dbUser.role
+            token.onboardingStatus = dbUser.onboardingStatus
+            token.onboardingStep = dbUser.onboardingStep || 'profile-setup' // Fallback to first step
+            token.sub = dbUser.id
+            
+            console.log('[JWT] OAuth login - User data:', {
+              email: dbUser.email,
+              role: dbUser.role,
+              onboardingStatus: dbUser.onboardingStatus,
+              onboardingStep: dbUser.onboardingStep
+            })
+          } else {
+            console.error('[JWT] OAuth login - User not found in database after OAuth sign-in:', token.email)
+          }
+        } catch (error) {
+          console.error('[JWT] Error fetching user role:', error)
+        }
+      } else if (user) {
+        // Handle non-OAuth sign-ins (credentials, etc.)
         try {
           const dbUser = await prisma.user.findUnique({
             where: { email: token.email! || (user as any).email }
@@ -96,53 +154,20 @@ export const authOptions: NextAuthOptions = {
           if (dbUser) {
             token.role = dbUser.role
             token.onboardingStatus = dbUser.onboardingStatus
-            token.onboardingStep = dbUser.onboardingStep
+            token.onboardingStep = dbUser.onboardingStep || 'profile-setup'
             token.sub = dbUser.id
           } else {
             // Fallback to user object if DB lookup fails
-            token.role = (user as any).role
-            token.onboardingStatus = (user as any).onboardingStatus
-            token.onboardingStep = (user as any).onboardingStep
+            token.role = (user as any).role || 'GUEST'
+            token.onboardingStatus = (user as any).onboardingStatus || 'PENDING'
+            token.onboardingStep = (user as any).onboardingStep || 'profile-setup'
           }
         } catch (error) {
-          console.error('Error fetching user data on sign-in:', error)
+          console.error('[JWT] Error fetching user data on sign-in:', error)
           // Fallback to user object if DB lookup fails
-          token.role = (user as any).role
-          token.onboardingStatus = (user as any).onboardingStatus
-          token.onboardingStep = (user as any).onboardingStep
-        }
-      }
-
-      // Handle OAuth providers - always fetch fresh role from database
-      if (account?.provider && ['google', 'apple', 'facebook'].includes(account.provider)) {
-        try {
-          // Wait a bit for PrismaAdapter to finish creating user
-          await new Promise(resolve => setTimeout(resolve, 100))
-
-          let dbUser = await prisma.user.findUnique({
-            where: { email: token.email! }
-          })
-
-          // If user was just created, set default role
-          if (dbUser && !dbUser.role) {
-            dbUser = await prisma.user.update({
-              where: { email: token.email! },
-              data: {
-                role: 'GUEST',
-                onboardingStatus: 'PENDING',
-                emailVerified: new Date()
-              }
-            })
-          }
-
-          if (dbUser) {
-            token.role = dbUser.role
-            token.onboardingStatus = dbUser.onboardingStatus
-            token.onboardingStep = dbUser.onboardingStep
-            token.sub = dbUser.id
-          }
-        } catch (error) {
-          console.error('Error fetching user role:', error)
+          token.role = (user as any).role || 'GUEST'
+          token.onboardingStatus = (user as any).onboardingStatus || 'PENDING'
+          token.onboardingStep = (user as any).onboardingStep || 'profile-setup'
         }
       }
 
@@ -176,6 +201,26 @@ export const authOptions: NextAuthOptions = {
     async signIn({ user, account, profile }) {
       // Allow all sign-ins - PrismaAdapter and jwt callback handle user creation/updates
       return true
+    },
+    async redirect({ url, baseUrl }) {
+      // If redirecting to a relative URL, make it absolute
+      if (url.startsWith('/')) {
+        url = `${baseUrl}${url}`
+      }
+      
+      // If redirecting to same origin after OAuth callback, let middleware handle routing
+      // The middleware and /onboarding/page.tsx will check onboardingStatus from the session
+      // and redirect appropriately
+      if (new URL(url).origin === baseUrl) {
+        // For OAuth callbacks, redirect to /onboarding which will check status and route accordingly
+        // This ensures we always have fresh data from the database
+        if (url.includes('/api/auth/callback/')) {
+          return `${baseUrl}/onboarding`
+        }
+      }
+      
+      // Default: use the provided URL
+      return url
     }
   },
   pages: {

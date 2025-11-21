@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { signIn, getSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -73,11 +73,18 @@ export default function SignInPage() {
   const handleSocialSignIn = async (provider: 'google' | 'facebook' | 'apple') => {
     setIsLoading(true)
     try {
-      await signIn(provider, { callbackUrl: '/dashboard' })
+      console.log(`Attempting ${provider} sign-in...`)
+      // Don't specify callbackUrl - let NextAuth redirect callback handle it based on onboarding status
+      const result = await signIn(provider, { 
+        redirect: true 
+      })
+      console.log(`${provider} sign-in result:`, result)
+      // Note: signIn with redirect: true will navigate away, so code below may not execute
     } catch (error) {
+      console.error(`${provider} sign-in error:`, error)
       toast({
         title: "Errore",
-        description: `Accesso con ${provider} fallito. Riprova.`,
+        description: `Accesso con ${provider} fallito. ${error instanceof Error ? error.message : 'Riprova.'}`,
         variant: "destructive",
       })
       setIsLoading(false)
@@ -89,6 +96,17 @@ export default function SignInPage() {
   const hasFacebookAuth = process.env.NEXT_PUBLIC_FACEBOOK_CLIENT_ID
   const hasAppleAuth = process.env.NEXT_PUBLIC_APPLE_ID
   const hasSocialAuth = hasGoogleAuth || hasFacebookAuth || hasAppleAuth
+
+  // Debug: Log OAuth configuration
+  useEffect(() => {
+    console.log('OAuth Configuration Check:')
+    console.log('- Google Client ID:', hasGoogleAuth ? '✅ Configured' : '❌ Missing')
+    console.log('- Facebook Client ID:', hasFacebookAuth ? '✅ Configured' : '❌ Missing')
+    console.log('- Apple ID:', hasAppleAuth ? '✅ Configured' : '❌ Missing')
+    if (!hasGoogleAuth && !hasFacebookAuth && !hasAppleAuth) {
+      console.warn('⚠️ No OAuth providers configured! Check your .env.local file.')
+    }
+  }, [hasGoogleAuth, hasFacebookAuth, hasAppleAuth])
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
