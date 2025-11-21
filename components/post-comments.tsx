@@ -40,6 +40,12 @@ export function PostComments({ postId, isOpen, onClose, onCommentAdded }: PostCo
   const [swipeStartY, setSwipeStartY] = useState(0)
   const [currentY, setCurrentY] = useState(0)
   const [deletingCommentId, setDeletingCommentId] = useState<string | null>(null)
+  const [mounted, setMounted] = useState(false)
+
+  // Ensure component is mounted on client-side to avoid hydration issues
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const fetchComments = useCallback(async () => {
     setIsLoading(true)
@@ -57,10 +63,10 @@ export function PostComments({ postId, isOpen, onClose, onCommentAdded }: PostCo
   }, [postId])
 
   useEffect(() => {
-    if (isOpen && postId) {
+    if (isOpen && postId && mounted) {
       fetchComments()
     }
-  }, [isOpen, postId, fetchComments])
+  }, [isOpen, postId, fetchComments, mounted])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -144,7 +150,8 @@ export function PostComments({ postId, isOpen, onClose, onCommentAdded }: PostCo
     setCurrentY(0)
   }
 
-  if (!isOpen) return null
+  // Don't render until mounted and open to avoid hydration issues
+  if (!mounted || !isOpen) return null
 
   return (
     <div className="fixed inset-0 z-[1300] bg-black/50" onClick={onClose}>

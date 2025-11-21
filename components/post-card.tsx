@@ -616,13 +616,15 @@ export function PostCard({
         />
       )}
 
-      {/* Comments Panel */}
-      <PostComments
-        postId={id}
-        isOpen={showComments}
-        onClose={() => setShowComments(false)}
-        onCommentAdded={() => setCommentCount(commentCount + 1)}
-      />
+      {/* Comments Panel - Only render when open to avoid hydration issues */}
+      {showComments && (
+        <PostComments
+          postId={id}
+          isOpen={showComments}
+          onClose={() => setShowComments(false)}
+          onCommentAdded={() => setCommentCount(commentCount + 1)}
+        />
+      )}
 
       {/* Image Lightbox */}
       {lightboxOpen && images.length > 0 && (
