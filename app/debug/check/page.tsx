@@ -1,12 +1,22 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { CheckCircle2, XCircle, AlertCircle, Loader2 } from 'lucide-react'
 
 export default function DebugCheckPage() {
+  // Disable debug page in production
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'production') {
+      window.location.href = '/'
+    }
+  }, [])
+  
+  if (process.env.NODE_ENV === 'production') {
+    return null
+  }
   const { data: session, status: sessionStatus } = useSession()
   const [checks, setChecks] = useState<Record<string, { status: 'checking' | 'success' | 'error', message: string }>>({})
   const [isRunning, setIsRunning] = useState(false)

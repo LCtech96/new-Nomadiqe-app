@@ -208,15 +208,45 @@ export const authOptions: NextAuthOptions = {
         url = `${baseUrl}${url}`
       }
       
-      // If redirecting to same origin after OAuth callback, let middleware handle routing
-      // The middleware and /onboarding/page.tsx will check onboardingStatus from the session
-      // and redirect appropriately
-      if (new URL(url).origin === baseUrl) {
-        // For OAuth callbacks, redirect to /onboarding which will check status and route accordingly
-        // This ensures we always have fresh data from the database
-        if (url.includes('/api/auth/callback/')) {
+      // If redirecting to same origin after OAuth callback, check user status from database
+      if (new URL(url).origin === baseUrl && url.includes('/api/auth/callback/')) {
+        try {
+          // Get session to find user email
+          const session = await getServerSession(authOptions)
+          if (session?.user?.email) {
+            // Fetch fresh user data from database
+            const dbUser = await prisma.user.findUnique({
+              where: { email: session.user.email },
+              select: { 
+                onboardingStatus: true, 
+                role: true 
+              }
+            })
+            
+            if (dbUser) {
+              // If onboarding is completed, redirect directly to dashboard
+              if (dbUser.onboardingStatus === 'COMPLETED') {
+                const dashboardUrl = dbUser.role === 'HOST' ? '/dashboard/host'
+                  : dbUser.role === 'INFLUENCER' ? '/dashboard/influencer'
+                  : dbUser.role === 'GUEST' ? '/dashboard/guest'
+                  : '/dashboard'
+                console.log('[Redirect Callback] Onboarding completed, redirecting to:', dashboardUrl)
+                return `${baseUrl}${dashboardUrl}`
+              } else {
+                // Onboarding not completed, go to onboarding
+                console.log('[Redirect Callback] Onboarding not completed, redirecting to onboarding')
+                return `${baseUrl}/onboarding`
+              }
+            }
+          }
+        } catch (error) {
+          console.error('[Redirect Callback] Error checking user status:', error)
+          // Fallback to onboarding if we can't check status
           return `${baseUrl}/onboarding`
         }
+        
+        // If we can't get session, redirect to onboarding
+        return `${baseUrl}/onboarding`
       }
       
       // Default: use the provided URL

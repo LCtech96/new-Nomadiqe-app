@@ -4,6 +4,13 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
 
 export async function GET() {
+  // Disable debug endpoints in production for security
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json({
+      error: 'Debug endpoints are disabled in production'
+    }, { status: 403 })
+  }
+  
   try {
     const session = await getServerSession(authOptions)
     
@@ -65,8 +72,17 @@ export async function GET() {
           }
         }
       } catch (dbError) {
+        // Sanitize error message to prevent exposing DATABASE_URL
+        let errorMessage = 'Unknown error'
+        if (dbError instanceof Error) {
+          errorMessage = dbError.message
+          // Remove any potential DATABASE_URL or password exposure
+          errorMessage = errorMessage.replace(/postgresql:\/\/[^@]+@/g, 'postgresql://***:***@')
+          errorMessage = errorMessage.replace(/postgres:\/\/[^@]+@/g, 'postgres://***:***@')
+          errorMessage = errorMessage.replace(/password[=:][^\s]+/gi, 'password=***')
+        }
         result.database = {
-          error: dbError instanceof Error ? dbError.message : 'Unknown error'
+          error: errorMessage
         }
       }
     } else {
@@ -75,9 +91,19 @@ export async function GET() {
 
     return NextResponse.json(result, { status: 200 })
   } catch (error) {
+    // Sanitize error message to prevent exposing sensitive information
+    let errorMessage = 'Unknown error'
+    if (error instanceof Error) {
+      errorMessage = error.message
+      // Remove any potential DATABASE_URL or password exposure
+      errorMessage = errorMessage.replace(/postgresql:\/\/[^@]+@/g, 'postgresql://***:***@')
+      errorMessage = errorMessage.replace(/postgres:\/\/[^@]+@/g, 'postgres://***:***@')
+      errorMessage = errorMessage.replace(/password[=:][^\s]+/gi, 'password=***')
+    }
+    
     return NextResponse.json({
       error: 'Failed to get status',
-      details: error instanceof Error ? error.message : 'Unknown error'
+      details: errorMessage
     }, { status: 500 })
   }
 }

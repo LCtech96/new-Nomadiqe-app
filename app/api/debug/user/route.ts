@@ -4,6 +4,13 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
 
 export async function GET() {
+  // Disable debug endpoints in production for security
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json({
+      error: 'Debug endpoints are disabled in production'
+    }, { status: 403 })
+  }
+  
   try {
     const session = await getServerSession(authOptions)
     
@@ -69,10 +76,20 @@ export async function GET() {
       }
     }, { status: 200 })
   } catch (error) {
+    // Sanitize error message to prevent exposing sensitive information
+    let errorMessage = 'Unknown error'
+    if (error instanceof Error) {
+      errorMessage = error.message
+      // Remove any potential DATABASE_URL or password exposure
+      errorMessage = errorMessage.replace(/postgresql:\/\/[^@]+@/g, 'postgresql://***:***@')
+      errorMessage = errorMessage.replace(/postgres:\/\/[^@]+@/g, 'postgres://***:***@')
+      errorMessage = errorMessage.replace(/password[=:][^\s]+/gi, 'password=***')
+    }
+    
     return NextResponse.json({
       error: 'Failed to get user data',
-      details: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined
+      details: errorMessage
+      // Never expose stack traces in production
     }, { status: 500 })
   }
 }
