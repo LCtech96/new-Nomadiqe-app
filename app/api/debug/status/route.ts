@@ -51,7 +51,7 @@ export async function GET() {
             role: dbUser.role,
             onboardingStatus: dbUser.onboardingStatus,
             onboardingStep: dbUser.onboardingStep,
-            hasGoogleAccount: dbUser.accounts?.some(acc => acc.provider === 'google') || false,
+            hasGoogleAccount: dbUser.accounts?.some((acc: { provider: string }) => acc.provider === 'google') || false,
             accountsCount: dbUser.accounts?.length || 0
           } : null
         }
