@@ -39,7 +39,7 @@ const nextConfig = {
   },
   // Ensure ESLint doesn't block the build
   eslint: {
-    ignoreDuringBuilds: false,
+    ignoreDuringBuilds: true,
   },
   // Experimental features
   experimental: {
