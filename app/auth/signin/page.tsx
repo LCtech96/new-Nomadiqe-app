@@ -73,15 +73,41 @@ export default function SignInPage() {
   const handleSocialSignIn = async (provider: 'google' | 'facebook' | 'apple') => {
     setIsLoading(true)
     try {
-      console.log(`Attempting ${provider} sign-in...`)
-      // Don't specify callbackUrl - let NextAuth redirect callback handle it based on onboarding status
+      console.log(`[SignIn] Attempting ${provider} sign-in...`)
+      
+      // Check if provider is configured
+      const isConfigured = provider === 'google' ? !!process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
+        : provider === 'facebook' ? !!process.env.NEXT_PUBLIC_FACEBOOK_CLIENT_ID
+        : !!process.env.NEXT_PUBLIC_APPLE_ID
+      
+      if (!isConfigured) {
+        console.error(`[SignIn] ${provider} provider not configured`)
+        toast({
+          title: "Errore",
+          description: `Il provider ${provider} non è configurato. Contatta il supporto.`,
+          variant: "destructive",
+        })
+        setIsLoading(false)
+        return
+      }
+      
+      console.log(`[SignIn] ${provider} provider is configured, calling signIn...`)
+      
+      // Call signIn with redirect
       const result = await signIn(provider, { 
-        redirect: true 
+        redirect: true,
+        callbackUrl: '/onboarding' // Explicit callback URL
       })
-      console.log(`${provider} sign-in result:`, result)
+      
+      console.log(`[SignIn] ${provider} sign-in result:`, result)
+      
       // Note: signIn with redirect: true will navigate away, so code below may not execute
+      // If we get here, something went wrong
+      if (result?.error) {
+        throw new Error(result.error)
+      }
     } catch (error) {
-      console.error(`${provider} sign-in error:`, error)
+      console.error(`[SignIn] ${provider} sign-in error:`, error)
       toast({
         title: "Errore",
         description: `Accesso con ${provider} fallito. ${error instanceof Error ? error.message : 'Riprova.'}`,

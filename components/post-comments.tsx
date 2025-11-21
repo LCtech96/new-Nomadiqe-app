@@ -150,8 +150,8 @@ export function PostComments({ postId, isOpen, onClose, onCommentAdded }: PostCo
     setCurrentY(0)
   }
 
-  // Don't render until mounted and open to avoid hydration issues
-  if (!mounted || !isOpen) return null
+  // Don't render until mounted to avoid hydration issues
+  if (!mounted) return null
 
   return (
     <div className="fixed inset-0 z-[1300] bg-black/50" onClick={onClose}>
