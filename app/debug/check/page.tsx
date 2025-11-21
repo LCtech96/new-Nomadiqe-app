@@ -7,19 +7,24 @@ import { Button } from '@/components/ui/button'
 import { CheckCircle2, XCircle, AlertCircle, Loader2 } from 'lucide-react'
 
 export default function DebugCheckPage() {
+  const { data: session, status: sessionStatus } = useSession()
+  const [checks, setChecks] = useState<Record<string, { status: 'checking' | 'success' | 'error', message: string }>>({})
+  const [isRunning, setIsRunning] = useState(false)
+  const [isProduction, setIsProduction] = useState(false)
+  
   // Disable debug page in production
   useEffect(() => {
-    if (process.env.NODE_ENV === 'production') {
+    // Check if we're in production (client-side check)
+    if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+      setIsProduction(true)
       window.location.href = '/'
     }
   }, [])
   
-  if (process.env.NODE_ENV === 'production') {
+  // Don't render anything in production
+  if (isProduction) {
     return null
   }
-  const { data: session, status: sessionStatus } = useSession()
-  const [checks, setChecks] = useState<Record<string, { status: 'checking' | 'success' | 'error', message: string }>>({})
-  const [isRunning, setIsRunning] = useState(false)
 
   const runChecks = async () => {
     setIsRunning(true)
