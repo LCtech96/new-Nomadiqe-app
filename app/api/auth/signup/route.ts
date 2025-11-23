@@ -55,24 +55,34 @@ export async function POST(request: NextRequest) {
     })
 
     // Create default traveler profile
-    await prisma.travelerProfile.create({
-      data: {
-        userId: user.id,
-        preferences: {
-          travelStyle: [],
-          interests: [],
-          budgetRange: null,
-          accommodationTypes: []
+    try {
+      await prisma.travelerProfile.create({
+        data: {
+          userId: user.id,
+          preferences: {
+            travelStyle: [],
+            interests: [],
+            budgetRange: null,
+            accommodationTypes: []
+          }
         }
-      }
-    })
+      })
+    } catch (profileError) {
+      console.error('Error creating traveler profile:', profileError)
+      // Continue even if profile creation fails
+    }
 
-    // Award signup bonus points
-    await awardPoints({
-      userId: user.id,
-      action: 'signup',
-      description: 'Welcome to Nomadiqe! Signup bonus',
-    })
+    // Award signup bonus points (optional - don't fail registration if points service fails)
+    try {
+      await awardPoints({
+        userId: user.id,
+        action: 'signup',
+        description: 'Welcome to Nomadiqe! Signup bonus',
+      })
+    } catch (pointsError) {
+      console.error('Error awarding signup points:', pointsError)
+      // Continue even if points award fails - points system might not be fully configured
+    }
 
     return NextResponse.json(
       {
@@ -90,16 +100,36 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Registration error:', error)
     
-    // Handle Prisma unique constraint errors
-    if (error instanceof Error && error.message.includes('Unique constraint')) {
-      return NextResponse.json(
-        { message: 'A user with this email already exists' },
-        { status: 400 }
-      )
+    // Log detailed error information for debugging
+    if (error instanceof Error) {
+      console.error('Error message:', error.message)
+      console.error('Error stack:', error.stack)
+      
+      // Handle Prisma unique constraint errors
+      if (error.message.includes('Unique constraint') || error.message.includes('duplicate key')) {
+        return NextResponse.json(
+          { message: 'A user with this email already exists' },
+          { status: 400 }
+        )
+      }
+      
+      // Handle Prisma validation errors
+      if (error.message.includes('Invalid value') || error.message.includes('Argument')) {
+        return NextResponse.json(
+          { message: 'Invalid input data. Please check your email and password.' },
+          { status: 400 }
+        )
+      }
     }
 
     return NextResponse.json(
-      { message: 'Internal server error' },
+      { 
+        message: 'Internal server error',
+        // In development, include error details
+        ...(process.env.NODE_ENV === 'development' && {
+          error: error instanceof Error ? error.message : 'Unknown error'
+        })
+      },
       { status: 500 }
     )
   }
