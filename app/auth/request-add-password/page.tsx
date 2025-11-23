@@ -65,9 +65,18 @@ export default function RequestAddPasswordPage() {
 
   if (isSuccess) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
-        <div className="w-full max-w-md">
-          <div className="bg-card border border-border rounded-lg shadow-lg p-8">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4 relative overflow-hidden">
+        {/* Background image with blur effect for glassmorphism */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center opacity-30 dark:opacity-20"
+          style={{
+            backgroundImage: 'url(https://cdn.pixabay.com/photo/2020/05/27/22/18/meadow-5229169_1280.jpg)',
+            filter: 'saturate(140%) blur(20px)',
+            transform: 'scale(1.1)'
+          }}
+        />
+        <div className="w-full max-w-md relative z-10">
+          <div className="glass p-8">
             <div className="text-center mb-6">
               <div className="flex justify-center mb-4">
                 <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
@@ -117,9 +126,18 @@ export default function RequestAddPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
-      <div className="w-full max-w-md">
-        <div className="bg-card border border-border rounded-lg shadow-lg p-8">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4 relative overflow-hidden">
+      {/* Background image with blur effect for glassmorphism */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center opacity-30 dark:opacity-20"
+        style={{
+          backgroundImage: 'url(https://cdn.pixabay.com/photo/2020/05/27/22/18/meadow-5229169_1280.jpg)',
+          filter: 'saturate(140%) blur(20px)',
+          transform: 'scale(1.1)'
+        }}
+      />
+      <div className="w-full max-w-md relative z-10">
+        <div className="glass p-8">
           {/* Header */}
           <div className="text-center mb-6">
             <div className="flex justify-center mb-4">

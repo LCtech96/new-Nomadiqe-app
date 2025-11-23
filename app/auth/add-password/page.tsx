@@ -133,9 +133,18 @@ export default function AddPasswordPage() {
 
   if (isValidating) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
-        <div className="w-full max-w-md">
-          <div className="bg-card border border-border rounded-lg shadow-lg p-8 text-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4 relative overflow-hidden">
+        {/* Background image with blur effect for glassmorphism */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center opacity-30 dark:opacity-20"
+          style={{
+            backgroundImage: 'url(https://cdn.pixabay.com/photo/2020/05/27/22/18/meadow-5229169_1280.jpg)',
+            filter: 'saturate(140%) blur(20px)',
+            transform: 'scale(1.1)'
+          }}
+        />
+        <div className="w-full max-w-md relative z-10">
+          <div className="glass p-8 text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
             <p className="text-muted-foreground">Validazione link in corso...</p>
           </div>
@@ -146,9 +155,18 @@ export default function AddPasswordPage() {
 
   if (!isTokenValid) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
-        <div className="w-full max-w-md">
-          <div className="bg-card border border-border rounded-lg shadow-lg p-8">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4 relative overflow-hidden">
+        {/* Background image with blur effect for glassmorphism */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center opacity-30 dark:opacity-20"
+          style={{
+            backgroundImage: 'url(https://cdn.pixabay.com/photo/2020/05/27/22/18/meadow-5229169_1280.jpg)',
+            filter: 'saturate(140%) blur(20px)',
+            transform: 'scale(1.1)'
+          }}
+        />
+        <div className="w-full max-w-md relative z-10">
+          <div className="glass p-8">
             <div className="text-center mb-6">
               <XCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
               <h1 className="text-2xl font-bold mb-2">Link non valido</h1>
@@ -176,9 +194,18 @@ export default function AddPasswordPage() {
   const passwordsMatch = password && confirmPassword && password === confirmPassword
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
-      <div className="w-full max-w-md">
-        <div className="bg-card border border-border rounded-lg shadow-lg p-8">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4 relative overflow-hidden">
+      {/* Background image with blur effect for glassmorphism */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center opacity-30 dark:opacity-20"
+        style={{
+          backgroundImage: 'url(https://cdn.pixabay.com/photo/2020/05/27/22/18/meadow-5229169_1280.jpg)',
+          filter: 'saturate(140%) blur(20px)',
+          transform: 'scale(1.1)'
+        }}
+      />
+      <div className="w-full max-w-md relative z-10">
+        <div className="glass p-8">
           {/* Header */}
           <div className="text-center mb-6">
             <div className="flex justify-center mb-4">
