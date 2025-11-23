@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
         select: { provider: true }
       })
       
-      const oauthProviders = accounts.map(acc => acc.provider)
+      const oauthProviders = accounts.map((acc: { provider: string }) => acc.provider)
       console.log('[PASSWORD_RESET] OAuth providers linked:', oauthProviders)
       
       // For OAuth-only accounts, send "add password" email instead
