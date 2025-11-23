@@ -148,9 +148,15 @@ export default function SignUpPage() {
   const handleSocialSignUp = async (provider: 'google' | 'facebook' | 'apple') => {
     setIsLoading(true)
     try {
-      // New users will be automatically redirected to onboarding by NextAuth and middleware
-      await signIn(provider, { callbackUrl: '/onboarding' })
+      console.log(`[SignUp] Attempting ${provider} sign-up...`)
+      
+      // Use window.location for OAuth redirect (more reliable)
+      const callbackUrl = encodeURIComponent('/onboarding')
+      window.location.href = `/api/auth/signin/${provider}?callbackUrl=${callbackUrl}`
+      
+      // Note: window.location.href will navigate away immediately
     } catch (error) {
+      console.error(`[SignUp] ${provider} sign-up error:`, error)
       toast({
         title: "Errore",
         description: `Registrazione con ${provider} fallita. Riprova.`,
@@ -160,11 +166,38 @@ export default function SignUpPage() {
     }
   }
 
-  // Check which OAuth providers are configured
-  const hasGoogleAuth = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
-  const hasFacebookAuth = process.env.NEXT_PUBLIC_FACEBOOK_CLIENT_ID
-  const hasAppleAuth = process.env.NEXT_PUBLIC_APPLE_ID
-  const hasSocialAuth = hasGoogleAuth || hasFacebookAuth || hasAppleAuth
+  // Check which OAuth providers are available
+  const [hasSocialAuth, setHasSocialAuth] = useState(false)
+  const [hasGoogleAuth, setHasGoogleAuth] = useState(false)
+  const [hasFacebookAuth, setHasFacebookAuth] = useState(false)
+  const [hasAppleAuth, setHasAppleAuth] = useState(false)
+
+  // Check OAuth providers on mount
+  useEffect(() => {
+    const checkOAuthProviders = async () => {
+      try {
+        const response = await fetch('/api/auth/providers')
+        if (response.ok) {
+          const providers = await response.json()
+          const hasGoogle = !!providers.google
+          const hasFacebook = !!providers.facebook
+          const hasApple = !!providers.apple
+          
+          setHasGoogleAuth(hasGoogle)
+          setHasFacebookAuth(hasFacebook)
+          setHasAppleAuth(hasApple)
+          setHasSocialAuth(hasGoogle || hasFacebook || hasApple)
+        }
+      } catch (error) {
+        console.error('Error checking OAuth providers:', error)
+        // Default to showing buttons if check fails
+        setHasSocialAuth(true)
+        setHasGoogleAuth(true)
+      }
+    }
+    
+    checkOAuthProviders()
+  }, [])
 
   // Show loading state while checking authentication
   if (status === 'loading') {

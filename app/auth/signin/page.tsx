@@ -77,37 +77,12 @@ export default function SignInPage() {
     try {
       console.log(`[SignIn] Attempting ${provider} sign-in...`)
       
-      // Check if provider is configured
-      const isConfigured = provider === 'google' ? !!process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
-        : provider === 'facebook' ? !!process.env.NEXT_PUBLIC_FACEBOOK_CLIENT_ID
-        : !!process.env.NEXT_PUBLIC_APPLE_ID
+      // Use window.location for OAuth redirect (more reliable)
+      const callbackUrl = encodeURIComponent('/onboarding')
+      window.location.href = `/api/auth/signin/${provider}?callbackUrl=${callbackUrl}`
       
-      if (!isConfigured) {
-        console.error(`[SignIn] ${provider} provider not configured`)
-        toast({
-          title: "Errore",
-          description: `Il provider ${provider} non è configurato. Contatta il supporto.`,
-          variant: "destructive",
-        })
-        setIsLoading(false)
-        return
-      }
-      
-      console.log(`[SignIn] ${provider} provider is configured, calling signIn...`)
-      
-      // Call signIn with redirect
-      const result = await signIn(provider, { 
-        redirect: true,
-        callbackUrl: '/onboarding' // Explicit callback URL
-      })
-      
-      console.log(`[SignIn] ${provider} sign-in result:`, result)
-      
-      // Note: signIn with redirect: true will navigate away, so code below may not execute
-      // If we get here, something went wrong
-      if (result?.error) {
-        throw new Error(result.error)
-      }
+      // Note: window.location.href will navigate away immediately
+      // The code below won't execute, but we keep it for error cases
     } catch (error) {
       console.error(`[SignIn] ${provider} sign-in error:`, error)
       toast({
@@ -119,22 +94,45 @@ export default function SignInPage() {
     }
   }
 
-  // Check which OAuth providers are configured
-  const hasGoogleAuth = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
-  const hasFacebookAuth = process.env.NEXT_PUBLIC_FACEBOOK_CLIENT_ID
-  const hasAppleAuth = process.env.NEXT_PUBLIC_APPLE_ID
-  const hasSocialAuth = hasGoogleAuth || hasFacebookAuth || hasAppleAuth
+  // Check which OAuth providers are available by checking auth endpoints
+  const [hasSocialAuth, setHasSocialAuth] = useState(false)
+  const [hasGoogleAuth, setHasGoogleAuth] = useState(false)
+  const [hasFacebookAuth, setHasFacebookAuth] = useState(false)
+  const [hasAppleAuth, setHasAppleAuth] = useState(false)
 
-  // Debug: Log OAuth configuration
+  // Check OAuth providers on mount
   useEffect(() => {
-    console.log('OAuth Configuration Check:')
-    console.log('- Google Client ID:', hasGoogleAuth ? '✅ Configured' : '❌ Missing')
-    console.log('- Facebook Client ID:', hasFacebookAuth ? '✅ Configured' : '❌ Missing')
-    console.log('- Apple ID:', hasAppleAuth ? '✅ Configured' : '❌ Missing')
-    if (!hasGoogleAuth && !hasFacebookAuth && !hasAppleAuth) {
-      console.warn('⚠️ No OAuth providers configured! Check your .env.local file.')
+    const checkOAuthProviders = async () => {
+      try {
+        // Try to fetch the providers endpoint
+        const response = await fetch('/api/auth/providers')
+        if (response.ok) {
+          const providers = await response.json()
+          const hasGoogle = !!providers.google
+          const hasFacebook = !!providers.facebook
+          const hasApple = !!providers.apple
+          
+          setHasGoogleAuth(hasGoogle)
+          setHasFacebookAuth(hasFacebook)
+          setHasAppleAuth(hasApple)
+          setHasSocialAuth(hasGoogle || hasFacebook || hasApple)
+          
+          console.log('OAuth Providers Check:', {
+            google: hasGoogle ? '✅' : '❌',
+            facebook: hasFacebook ? '✅' : '❌',
+            apple: hasApple ? '✅' : '❌'
+          })
+        }
+      } catch (error) {
+        console.error('Error checking OAuth providers:', error)
+        // Default to showing buttons if check fails
+        setHasSocialAuth(true)
+        setHasGoogleAuth(true)
+      }
     }
-  }, [hasGoogleAuth, hasFacebookAuth, hasAppleAuth])
+    
+    checkOAuthProviders()
+  }, [])
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4 relative overflow-hidden">
