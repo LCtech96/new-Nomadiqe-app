@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
       role: user.role,
       hasPassword: hasPassword,
       canLoginWithPassword: hasPassword,
-      oauthAccounts: oauthAccounts.map(acc => ({
+      oauthAccounts: oauthAccounts.map((acc: { provider: string; providerAccountId: string }) => ({
         provider: acc.provider,
         accountId: acc.providerAccountId
       })),
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
       message: hasPassword 
         ? 'User exists and can login with email/password'
         : oauthAccounts.length > 0
-        ? `User exists but can only login with OAuth providers: ${oauthAccounts.map(acc => acc.provider).join(', ')}. Use "Continue with ${oauthAccounts[0].provider.charAt(0).toUpperCase() + oauthAccounts[0].provider.slice(1)}" button instead.`
+        ? `User exists but can only login with OAuth providers: ${oauthAccounts.map((acc: { provider: string }) => acc.provider).join(', ')}. Use "Continue with ${oauthAccounts[0].provider.charAt(0).toUpperCase() + oauthAccounts[0].provider.slice(1)}" button instead.`
         : 'User exists but has no password or OAuth accounts - account may be incomplete'
     }, { status: 200 })
 

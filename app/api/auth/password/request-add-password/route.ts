@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
       select: { provider: true }
     })
     
-    const oauthProviders = accounts.map(acc => acc.provider)
+    const oauthProviders = accounts.map((acc: { provider: string }) => acc.provider)
     console.log('[ADD_PASSWORD_REQUEST] OAuth-only account found:', {
       email: emailLower,
       providers: oauthProviders
