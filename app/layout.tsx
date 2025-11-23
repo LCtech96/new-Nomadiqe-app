@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Poppins, Inter } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/components/theme-provider'
@@ -42,13 +42,6 @@ export const metadata: Metadata = {
     statusBarStyle: 'black-translucent',
     title: 'Nomadiqe',
   },
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-    viewportFit: 'cover',
-  },
   openGraph: {
     title: 'Nomadiqe - Fairer Stays, Deeper Connections',
     description: 'Revolutionary travel booking platform with blockchain integration, low fees, and authentic local experiences.',
@@ -60,6 +53,14 @@ export const metadata: Metadata = {
     title: 'Nomadiqe - Fairer Stays, Deeper Connections',
     description: 'Revolutionary travel booking platform with blockchain integration, low fees, and authentic local experiences.',
   },
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
 }
 
 export default function RootLayout({

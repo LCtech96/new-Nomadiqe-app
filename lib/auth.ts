@@ -41,17 +41,37 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
+          console.log('[AUTH] Missing credentials:', { 
+            hasEmail: !!credentials?.email, 
+            hasPassword: !!credentials?.password 
+          })
           return null
         }
+
+        const emailLower = credentials.email.toLowerCase().trim()
+        console.log('[AUTH] Attempting login for email:', emailLower)
 
         try {
           const user = await prisma.user.findUnique({
             where: {
-              email: credentials.email.toLowerCase()
+              email: emailLower
             }
           })
 
-          if (!user || !user.password) {
+          if (!user) {
+            console.log('[AUTH] User not found in database:', emailLower)
+            return null
+          }
+
+          // Check if user has password (might be OAuth-only account)
+          if (!user.password) {
+            console.log('[AUTH] User exists but has no password (OAuth-only account):', {
+              email: user.email,
+              accounts: await prisma.account.findMany({
+                where: { userId: user.id },
+                select: { provider: true }
+              })
+            })
             return null
           }
 
@@ -61,8 +81,15 @@ export const authOptions: NextAuthOptions = {
           )
 
           if (!isPasswordValid) {
+            console.log('[AUTH] Invalid password for user:', emailLower)
             return null
           }
+
+          console.log('[AUTH] Login successful for user:', {
+            email: user.email,
+            id: user.id,
+            role: user.role
+          })
 
           return {
             id: user.id,
@@ -74,7 +101,7 @@ export const authOptions: NextAuthOptions = {
             onboardingStep: user.onboardingStep,
           }
         } catch (error) {
-          console.error('Error in authorize:', error)
+          console.error('[AUTH] Error in authorize:', error)
           return null
         }
       }

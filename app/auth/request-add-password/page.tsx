@@ -6,13 +6,12 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useToast } from '@/hooks/use-toast'
-import { Mail, ArrowLeft, CheckCircle2 } from 'lucide-react'
+import { Mail, ArrowLeft, CheckCircle2, Key } from 'lucide-react'
 
-export default function ForgotPasswordPage() {
+export default function RequestAddPasswordPage() {
   const [email, setEmail] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
-  const [isOAuthOnly, setIsOAuthOnly] = useState(false)
   const { toast } = useToast()
   const router = useRouter()
 
@@ -36,7 +35,7 @@ export default function ForgotPasswordPage() {
 
     setIsSubmitting(true)
     try {
-      const res = await fetch('/api/auth/password/forgot', {
+      const res = await fetch('/api/auth/password/request-add-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
@@ -49,20 +48,10 @@ export default function ForgotPasswordPage() {
       }
 
       setIsSuccess(true)
-      setIsOAuthOnly(data.isOAuthOnly || false)
-      
-      // Show different message for OAuth-only accounts
-      if (data.isOAuthOnly) {
-        toast({
-          title: 'Email inviata!',
-          description: 'Se questa email è registrata, riceverai un link per aggiungere una password al tuo account OAuth-only. Controlla la tua casella di posta (anche spam).',
-        })
-      } else {
-        toast({
-          title: 'Email inviata!',
-          description: 'Se questa email è registrata, riceverai un link per reimpostare la password. Controlla la tua casella di posta (anche spam).',
-        })
-      }
+      toast({
+        title: 'Email inviata!',
+        description: 'Se questa email è registrata come account OAuth-only, riceverai un link per aggiungere una password. Controlla la tua casella di posta (anche spam).',
+      })
     } catch (err: any) {
       toast({
         title: 'Errore',
@@ -86,25 +75,12 @@ export default function ForgotPasswordPage() {
                 </div>
               </div>
               <h1 className="text-2xl font-bold mb-2">Email inviata!</h1>
-              {isOAuthOnly ? (
-                <>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Se <strong>{email}</strong> è registrato, riceverai un link per <strong>aggiungere una password</strong> al tuo account OAuth-only.
-                  </p>
-                  <p className="text-xs text-muted-foreground mb-6">
-                    Il tuo account attualmente funziona solo con Google/Facebook/Apple. Dopo aver aggiunto una password, potrai accedere anche con email/password. Controlla la tua casella di posta (anche la cartella spam). Il link è valido per 24 ore.
-                  </p>
-                </>
-              ) : (
-                <>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Se <strong>{email}</strong> è registrato, riceverai un link per reimpostare la password.
-                  </p>
-                  <p className="text-xs text-muted-foreground mb-6">
-                    Controlla la tua casella di posta (anche la cartella spam). Il link è valido per 1 ora.
-                  </p>
-                </>
-              )}
+              <p className="text-sm text-muted-foreground mb-4">
+                Se <strong>{email}</strong> è registrato come account OAuth-only, riceverai un link per aggiungere una password.
+              </p>
+              <p className="text-xs text-muted-foreground mb-6">
+                Controlla la tua casella di posta (anche la cartella spam). Il link è valido per 24 ore.
+              </p>
             </div>
 
             <div className="space-y-3">
@@ -148,12 +124,12 @@ export default function ForgotPasswordPage() {
           <div className="text-center mb-6">
             <div className="flex justify-center mb-4">
               <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                <Mail className="h-6 w-6 text-primary" />
+                <Key className="h-6 w-6 text-primary" />
               </div>
             </div>
-            <h1 className="text-2xl font-bold mb-2">Password dimenticata?</h1>
+            <h1 className="text-2xl font-bold mb-2">Aggiungi password</h1>
             <p className="text-sm text-muted-foreground">
-              Inserisci la tua email e ti invieremo un link per reimpostare la password.
+              Il tuo account è configurato solo per l'accesso tramite Google/Facebook/Apple. Inserisci la tua email per ricevere un link per aggiungere una password.
             </p>
           </div>
 
@@ -174,7 +150,7 @@ export default function ForgotPasswordPage() {
                 autoFocus
               />
               <p className="mt-1 text-xs text-muted-foreground">
-                Riceverai un link per reimpostare la password all'indirizzo email inserito.
+                Riceverai un link per aggiungere una password all'indirizzo email inserito.
               </p>
             </div>
 
@@ -183,7 +159,7 @@ export default function ForgotPasswordPage() {
               className="w-full"
               disabled={isSubmitting || !email}
             >
-              {isSubmitting ? 'Invio in corso...' : 'Invia link di reset'}
+              {isSubmitting ? 'Invio in corso...' : 'Invia link per aggiungere password'}
             </Button>
           </form>
 
@@ -202,3 +178,4 @@ export default function ForgotPasswordPage() {
     </div>
   )
 }
+

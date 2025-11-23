@@ -29,10 +29,12 @@ export default function SignInPage() {
       })
 
       if (result?.error) {
+        // Provide more helpful error message
         toast({
           title: "Autenticazione fallita",
-          description: "Email o password non validi. Riprova.",
+          description: "Email o password non validi. Se hai un account OAuth-only (Google/Facebook/Apple), usa il pulsante 'Continua con Google' oppure aggiungi una password.",
           variant: "destructive",
+          duration: 5000,
         })
       } else if (result?.ok) {
         // Wait a bit for the session to be fully established
@@ -278,7 +280,10 @@ export default function SignInPage() {
                   )}
                 </button>
               </div>
-              <div className="mt-2 text-right">
+              <div className="mt-2 flex justify-between items-center">
+                <Link href="/auth/request-add-password" className="text-xs text-primary hover:underline">
+                  Account OAuth-only? Aggiungi password
+                </Link>
                 <Link href="/auth/forgot-password" className="text-xs text-primary hover:underline">
                   Hai dimenticato la password?
                 </Link>

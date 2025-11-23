@@ -377,6 +377,28 @@ export default function SignUpPage() {
             </Link>
           </div>
 
+          {/* OAuth-only account info */}
+          <div className="mt-6 p-4 bg-muted/50 border border-border rounded-lg">
+            <div className="text-center">
+              <p className="text-xs text-muted-foreground mb-3">
+                💡 <strong>Hai un account OAuth-only?</strong> (registrato con Google/Facebook/Apple)
+              </p>
+              <p className="text-xs text-muted-foreground mb-4">
+                Se ti sei registrato solo con un provider OAuth, <strong>aggiungi una password</strong> al tuo account per poterla recuperare in futuro se perdi l'accesso al tuo account OAuth.
+              </p>
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className="w-full text-xs"
+              >
+                <Link href="/auth/request-add-password">
+                  Aggiungi una password al tuo account OAuth
+                </Link>
+              </Button>
+            </div>
+          </div>
+
           <div className="mt-4 text-center text-xs text-muted-foreground">
             Registrandoti, accetti i nostri{' '}
             <Link href="/terms" className="text-primary hover:underline">

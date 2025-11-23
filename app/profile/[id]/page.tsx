@@ -30,89 +30,178 @@ interface ProfilePageProps {
 export default async function ProfilePage({ params }: ProfilePageProps) {
   const session = await getServerSession(authOptions)
 
-  const dbUser = await prisma.user.findUnique({
-    where: { id: params.id },
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      fullName: true,
-      username: true,
-      image: true,
-      profilePictureUrl: true,
-      coverPhotoUrl: true,
-      bio: true,
-      location: true,
-      phone: true,
-      isVerified: true,
-      role: true,
-      createdAt: true,
-    }
-  })
+  let dbUser
+  let postsRaw: any[] = []
+  let postsCount = 0
+  let followersCount = 0
+  let followingCount = 0
+  let propertiesCount = 0
+  let propertiesRaw: any[] | null = null
+  let userCommentsRaw: any[] = []
+  let dbError: string | null = null
 
-  if (!dbUser) {
-    notFound()
-  }
-
-  const [postsRaw, postsCount, followersCount, followingCount, propertiesCount, propertiesRaw, userCommentsRaw] = await Promise.all([
-    prisma.post.findMany({
-      where: { authorId: dbUser.id, isActive: true },
-      orderBy: { createdAt: 'desc' },
-      include: {
-        property: { select: { id: true, title: true } },
-        ...(session?.user?.id ? { likes: { where: { userId: session.user.id }, select: { id: true } } } : {}),
-        _count: { select: { likes: true, comments: true } },
-      },
-    }),
-    prisma.post.count({ where: { authorId: dbUser.id, isActive: true } }),
-    prisma.follow.count({ where: { followingId: dbUser.id } }),
-    prisma.follow.count({ where: { followerId: dbUser.id } }),
-    prisma.property.count({ where: { hostId: dbUser.id, isActive: true } }),
-    dbUser.role === 'HOST' ? prisma.property.findMany({
-      where: { hostId: dbUser.id, isActive: true },
-      orderBy: { createdAt: 'desc' },
+  try {
+    dbUser = await prisma.user.findUnique({
+      where: { id: params.id },
       select: {
         id: true,
-        title: true,
-        description: true,
-        type: true,
-        city: true,
-        country: true,
-        price: true,
-        currency: true,
-        images: true,
-        _count: {
-          select: {
-            bookings: true,
-            reviews: true,
-          }
-        }
+        email: true,
+        name: true,
+        fullName: true,
+        username: true,
+        image: true,
+        profilePictureUrl: true,
+        coverPhotoUrl: true,
+        bio: true,
+        location: true,
+        phone: true,
+        isVerified: true,
+        role: true,
+        createdAt: true,
       }
-    }) : null,
-    // Fetch comments made by this user on other users' posts
-    prisma.postComment.findMany({
-      where: { authorId: dbUser.id },
-      orderBy: { createdAt: 'desc' },
-      include: {
-        post: {
+    })
+
+    if (!dbUser) {
+      notFound()
+    }
+
+    try {
+      const results = await Promise.allSettled([
+        prisma.post.findMany({
+          where: { authorId: dbUser.id, isActive: true },
+          orderBy: { createdAt: 'desc' },
+          include: {
+            property: { select: { id: true, title: true } },
+            ...(session?.user?.id ? { likes: { where: { userId: session.user.id }, select: { id: true } } } : {}),
+            _count: { select: { likes: true, comments: true } },
+          },
+        }),
+        prisma.post.count({ where: { authorId: dbUser.id, isActive: true } }),
+        prisma.follow.count({ where: { followingId: dbUser.id } }),
+        prisma.follow.count({ where: { followerId: dbUser.id } }),
+        prisma.property.count({ where: { hostId: dbUser.id, isActive: true } }),
+        dbUser.role === 'HOST' ? prisma.property.findMany({
+          where: { hostId: dbUser.id, isActive: true },
+          orderBy: { createdAt: 'desc' },
           select: {
             id: true,
-            content: true,
+            title: true,
+            description: true,
+            type: true,
+            city: true,
+            country: true,
+            price: true,
+            currency: true,
             images: true,
-            author: {
+            _count: {
               select: {
-                id: true,
-                name: true,
-                fullName: true,
-                image: true,
-                profilePictureUrl: true,
+                bookings: true,
+                reviews: true,
               }
             }
           }
+        }) : Promise.resolve(null),
+        // Fetch comments made by this user on other users' posts
+        prisma.postComment.findMany({
+          where: { authorId: dbUser.id },
+          orderBy: { createdAt: 'desc' },
+          include: {
+            post: {
+              select: {
+                id: true,
+                content: true,
+                images: true,
+                author: {
+                  select: {
+                    id: true,
+                    name: true,
+                    fullName: true,
+                    image: true,
+                    profilePictureUrl: true,
+                  }
+                }
+              }
+            }
+          }
+        }),
+      ])
+
+      // Extract results with error handling
+      if (results[0].status === 'fulfilled') postsRaw = results[0].value
+      if (results[1].status === 'fulfilled') postsCount = results[1].value
+      if (results[2].status === 'fulfilled') followersCount = results[2].value
+      if (results[3].status === 'fulfilled') followingCount = results[3].value
+      if (results[4].status === 'fulfilled') propertiesCount = results[4].value
+      if (results[5].status === 'fulfilled') propertiesRaw = results[5].value
+      if (results[6].status === 'fulfilled') userCommentsRaw = results[6].value
+
+      // Check if any query failed
+      const hasErrors = results.some(r => r.status === 'rejected')
+      if (hasErrors) {
+        const firstError = results.find(r => r.status === 'rejected')
+        if (firstError && firstError.status === 'rejected') {
+          dbError = firstError.reason?.message || 'Database query failed'
+          // Check if it's a connection error
+          if (dbError.includes("Can't reach database server")) {
+            dbError = 'Database connection error. The database server is not reachable.'
+          }
         }
       }
-    }),
-  ])
+    } catch (queryError) {
+      dbError = queryError instanceof Error ? queryError.message : 'Database query failed'
+      if (dbError.includes("Can't reach database server")) {
+        dbError = 'Database connection error. The database server is not reachable.'
+      }
+    }
+  } catch (error) {
+    // If we can't even fetch the user, check if it's a database connection error
+    if (error instanceof Error && error.message.includes("Can't reach database server")) {
+      dbError = 'Database connection error. The database server is not reachable.'
+    } else {
+      // For other errors, still try to show 404 if user not found
+      if (error instanceof Error && error.message.includes('not found')) {
+        notFound()
+      }
+      dbError = error instanceof Error ? error.message : 'Failed to load profile'
+    }
+  }
+
+  // If we couldn't load the user due to database error, show error page early
+  if (!dbUser && dbError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
+        <div className="max-w-md w-full bg-card border border-border rounded-lg shadow-lg p-6">
+          <div className="text-center mb-4">
+            <h2 className="text-xl font-bold text-destructive mb-2">Database Connection Error</h2>
+            <p className="text-sm text-muted-foreground mb-4">{dbError}</p>
+            <div className="text-left bg-muted p-4 rounded-md mb-4">
+              <p className="text-xs font-semibold mb-2">How to fix:</p>
+              <ol className="text-xs space-y-1 list-decimal list-inside">
+                <li>Check if your Supabase database is paused</li>
+                <li>Go to Supabase Dashboard → Your project → Overview</li>
+                <li>If paused, click &quot;Restore&quot; to unpause it</li>
+                <li>Verify your DATABASE_URL in .env.local is correct</li>
+                <li>Restart your development server</li>
+              </ol>
+            </div>
+            <div className="flex gap-2 justify-center">
+              <Button asChild variant="outline">
+                <Link href="/api/debug/database">Check Database Connection</Link>
+              </Button>
+              <Button asChild>
+                <Link href="/">Go Home</Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // If user not found and no database error, show 404
+  if (!dbUser) {
+    notFound()
+  }
 
   const displayName = dbUser.fullName || dbUser.name || (dbUser.email ? dbUser.email.split('@')[0] : 'User')
   const avatarUrl = dbUser.profilePictureUrl || dbUser.image || undefined
@@ -177,8 +266,19 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   const hashtags = hashtagsMatch || []
   const bioWithoutHashtags = user.bio?.replace(/#[\w]+/g, '').trim() || ''
 
+  // Show warning banner if there's a database error but we still have partial data
   return (
-    <div className="min-h-screen relative overflow-x-hidden w-full bg-background">
+    <>
+      {dbError && (
+        <div className="bg-yellow-50 dark:bg-yellow-900/20 border-b border-yellow-200 dark:border-yellow-800 px-4 py-3">
+          <div className="max-w-4xl mx-auto">
+            <p className="text-sm text-yellow-800 dark:text-yellow-200">
+              ⚠️ Database connection issue detected. Some data may be incomplete. <Link href="/api/debug/database" className="underline font-semibold">Check connection status</Link>
+            </p>
+          </div>
+        </div>
+      )}
+      <div className="min-h-screen relative overflow-x-hidden w-full bg-background">
       {/* Modern Gradient Background with Glow Effects */}
       <div className="absolute inset-0 bg-gradient-to-b from-secondary/20 via-secondary/30 to-primary/30 -z-10" />
       <div className="absolute top-0 left-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl -z-10" />
@@ -299,5 +399,6 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
         />
       </section>
     </div>
+    </>
   )
 }
