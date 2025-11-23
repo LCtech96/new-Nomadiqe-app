@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
     const hasPassword = user.password !== null && user.password !== undefined
 
     // Get OAuth accounts
-    const oauthAccounts = user.accounts?.filter(acc => acc.type === 'oauth') || []
+    const oauthAccounts = user.accounts?.filter((acc: { type: string }) => acc.type === 'oauth') || []
 
     return NextResponse.json({
       exists: true,
