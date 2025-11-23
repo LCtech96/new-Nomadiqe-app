@@ -142,14 +142,14 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
         if (firstError && firstError.status === 'rejected') {
           dbError = firstError.reason?.message || 'Database query failed'
           // Check if it's a connection error
-          if (dbError.includes("Can't reach database server")) {
+          if (dbError && dbError.includes("Can't reach database server")) {
             dbError = 'Database connection error. The database server is not reachable.'
           }
         }
       }
     } catch (queryError) {
       dbError = queryError instanceof Error ? queryError.message : 'Database query failed'
-      if (dbError.includes("Can't reach database server")) {
+      if (dbError && dbError.includes("Can't reach database server")) {
         dbError = 'Database connection error. The database server is not reachable.'
       }
     }
