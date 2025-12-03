@@ -551,6 +551,11 @@ enum SocialPlatform {
   INSTAGRAM
   TIKTOK
   YOUTUBE
+  FACEBOOK
+  TWITTER
+  LINKEDIN
+  PINTEREST
+  TWITCH
 }
 
 enum PropertyType {

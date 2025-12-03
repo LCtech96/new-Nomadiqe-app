@@ -6,11 +6,11 @@ import { useOnboarding, useOnboardingApi } from '@/contexts/OnboardingContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Instagram, Music, Youtube, AlertCircle, CheckCircle, ExternalLink, Users } from 'lucide-react'
+import { Instagram, Music, Youtube, AlertCircle, CheckCircle, ExternalLink, Users, Camera, MessageSquare } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { getNextStep } from '@/lib/onboarding'
 
-type SocialPlatform = 'INSTAGRAM' | 'TIKTOK' | 'YOUTUBE'
+type SocialPlatform = 'INSTAGRAM' | 'TIKTOK' | 'YOUTUBE' | 'FACEBOOK' | 'TWITTER' | 'LINKEDIN' | 'PINTEREST' | 'TWITCH'
 
 interface PlatformConfig {
   id: SocialPlatform
@@ -49,6 +49,51 @@ const platforms: PlatformConfig[] = [
     bgColor: 'bg-red-50 border-red-200',
     description: 'Connect YouTube for long-form video and vlog opportunities',
     minFollowers: 1000
+  },
+  {
+    id: 'FACEBOOK',
+    name: 'Facebook',
+    icon: Users,
+    color: 'text-blue-600',
+    bgColor: 'bg-blue-50 border-blue-200',
+    description: 'Connect Facebook for community engagement and reach',
+    minFollowers: 1000
+  },
+  {
+    id: 'TWITTER',
+    name: 'Twitter/X',
+    icon: MessageSquare,
+    color: 'text-sky-500',
+    bgColor: 'bg-sky-50 border-sky-200',
+    description: 'Link your Twitter/X for real-time updates and conversations',
+    minFollowers: 1000
+  },
+  {
+    id: 'LINKEDIN',
+    name: 'LinkedIn',
+    icon: Users,
+    color: 'text-blue-700',
+    bgColor: 'bg-blue-50 border-blue-200',
+    description: 'Connect LinkedIn for professional networking and B2B opportunities',
+    minFollowers: 500
+  },
+  {
+    id: 'PINTEREST',
+    name: 'Pinterest',
+    icon: Camera,
+    color: 'text-red-500',
+    bgColor: 'bg-red-50 border-red-200',
+    description: 'Link Pinterest for visual inspiration and lifestyle content',
+    minFollowers: 1000
+  },
+  {
+    id: 'TWITCH',
+    name: 'Twitch',
+    icon: Music,
+    color: 'text-purple-600',
+    bgColor: 'bg-purple-50 border-purple-200',
+    description: 'Connect Twitch for live streaming and gaming content',
+    minFollowers: 500
   }
 ]
 

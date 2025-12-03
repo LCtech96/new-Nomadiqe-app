@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import Link from "next/link"
 import { BackButton } from "@/components/back-button"
+import { BookingWidget } from "@/components/property/booking-widget"
 
 interface PropertyPageProps {
   params: {
@@ -276,42 +277,14 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
                   )}
                 </div>
 
-                <div className="space-y-4 mb-6">
-                  <div>
-                    <Label htmlFor="check-in">Check-in</Label>
-                    <input
-                      id="check-in"
-                      type="date"
-                      className="w-full px-4 py-2 border border-border rounded-md mt-2"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="check-out">Check-out</Label>
-                    <input
-                      id="check-out"
-                      type="date"
-                      className="w-full px-4 py-2 border border-border rounded-md mt-2"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="guests">Guests</Label>
-                    <select id="guests" className="w-full px-4 py-2 border border-border rounded-md mt-2">
-                      {Array.from({ length: property.maxGuests }, (_, i) => i + 1).map((num) => (
-                        <option key={num} value={num}>
-                          {num} {num === 1 ? "guest" : "guests"}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <Button className="w-full" size="lg">
-                  Reserve
-                </Button>
-
-                <p className="text-center text-sm text-muted-foreground mt-4">
-                  You won&apos;t be charged yet
-                </p>
+                <BookingWidget
+                  propertyId={property.id}
+                  hostId={property.host.id}
+                  hostName={property.host.name || 'Host'}
+                  price={property.price}
+                  currency={property.currency}
+                  maxGuests={property.maxGuests}
+                />
 
                 <Separator className="my-6" />
 
