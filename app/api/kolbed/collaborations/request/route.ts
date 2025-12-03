@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
 
     // Check if creator meets host requirements
     const totalFollowers = creator.socialConnections.reduce(
-      (sum, conn) => sum + (conn.followerCount || 0),
+      (sum: number, conn: any) => sum + (conn.followerCount || 0),
       0
     )
 

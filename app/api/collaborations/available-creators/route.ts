@@ -76,20 +76,20 @@ export async function GET(req: NextRequest) {
 
     // Filter by minimum followers and format results
     const formattedCreators = creators
-      .filter(creator => {
+      .filter((creator: any) => {
         const totalFollowers = creator.socialConnections.reduce(
-          (sum, conn) => sum + (conn.followerCount || 0),
+          (sum: number, conn: any) => sum + (conn.followerCount || 0),
           0
         )
         return totalFollowers >= minFollowers
       })
-      .map(creator => {
+      .map((creator: any) => {
         const totalFollowers = creator.socialConnections.reduce(
-          (sum, conn) => sum + (conn.followerCount || 0),
+          (sum: number, conn: any) => sum + (conn.followerCount || 0),
           0
         )
         
-        const platformsConnected = creator.socialConnections.map(conn => ({
+        const platformsConnected = creator.socialConnections.map((conn: any) => ({
           platform: conn.platform,
           username: conn.username,
           followers: conn.followerCount,

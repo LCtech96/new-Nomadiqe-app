@@ -66,7 +66,7 @@ export async function GET(req: NextRequest) {
         }
       })
 
-      hosts = hostsData.map(host => ({
+      hosts = hostsData.map((host: any) => ({
         type: 'host',
         id: host.id,
         name: host.fullName || host.name || host.username,
@@ -76,7 +76,7 @@ export async function GET(req: NextRequest) {
         location: host.location,
         verificationStatus: host.hostProfile?.verificationStatus,
         propertiesCount: host.properties.length,
-        properties: host.properties.map(prop => ({
+        properties: host.properties.map((prop: any) => ({
           id: prop.id,
           title: prop.title,
           type: prop.type,
@@ -117,9 +117,9 @@ export async function GET(req: NextRequest) {
         }
       })
 
-      creators = creatorsData.map(creator => {
+      creators = creatorsData.map((creator: any) => {
         const totalFollowers = creator.socialConnections.reduce(
-          (sum, conn) => sum + (conn.followerCount || 0),
+          (sum: number, conn: any) => sum + (conn.followerCount || 0),
           0
         )
 
@@ -132,7 +132,7 @@ export async function GET(req: NextRequest) {
           bio: creator.bio,
           contentNiches: creator.influencerProfile?.contentNiches || [],
           totalFollowers,
-          platformsConnected: creator.socialConnections.map(conn => ({
+          platformsConnected: creator.socialConnections.map((conn: any) => ({
             platform: conn.platform,
             username: conn.username,
             followers: conn.followerCount

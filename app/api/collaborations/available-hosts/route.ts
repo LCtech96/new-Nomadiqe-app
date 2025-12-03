@@ -91,7 +91,7 @@ export async function GET(req: NextRequest) {
 
     // Filter and format results
     const formattedHosts = hosts
-      .filter(host => {
+      .filter((host: any) => {
         // Check if creator meets host's follower requirements
         const minFollowers = host.hostProfile?.minFollowerCount || 0
         if (creatorTotalFollowers < minFollowers) return false
@@ -99,15 +99,15 @@ export async function GET(req: NextRequest) {
         // Check if creator's niches match host's preferences (if specified)
         const preferredNiches = host.hostProfile?.preferredNiches || []
         if (preferredNiches.length > 0) {
-          return creatorNiches.some(niche => 
+          return creatorNiches.some((niche: string) => 
             preferredNiches.includes(niche.toLowerCase())
           )
         }
 
         return true
       })
-      .map(host => {
-        const activeProperties = host.properties.filter(p => p.isActive)
+      .map((host: any) => {
+        const activeProperties = host.properties.filter((p: any) => p.isActive)
         
         return {
           id: host.id,
@@ -122,7 +122,7 @@ export async function GET(req: NextRequest) {
           minFollowerCount: host.hostProfile?.minFollowerCount,
           verificationStatus: host.hostProfile?.verificationStatus,
           propertiesCount: activeProperties.length,
-          properties: activeProperties.map(prop => ({
+          properties: activeProperties.map((prop: any) => ({
             id: prop.id,
             title: prop.title,
             type: prop.type,
