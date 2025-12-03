@@ -23,7 +23,7 @@ const errorMap = {
 export default function AuthErrorPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const error = searchParams.get('error') as keyof typeof errorMap
+  const error = searchParams?.get('error') as keyof typeof errorMap
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
