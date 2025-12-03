@@ -24,8 +24,8 @@ export default function AddPasswordPage() {
 
   useEffect(() => {
     // Get token and email from URL parameters
-    const token = searchParams.get('token')
-    const emailParam = searchParams.get('email')
+    const token = searchParams?.get('token')
+    const emailParam = searchParams?.get('email')
 
     if (!token || !emailParam) {
       setIsValidating(false)
