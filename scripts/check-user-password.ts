@@ -60,7 +60,7 @@ async function checkUserPassword(email: string) {
       })
       
       if (accounts.length > 0) {
-        console.log('  - OAuth Accounts:', accounts.map(a => a.provider).join(', '))
+        console.log('  - OAuth Accounts:', accounts.map((a: { provider: string }) => a.provider).join(', '))
       } else {
         console.log('  - No OAuth accounts found')
       }

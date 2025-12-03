@@ -62,7 +62,7 @@ export function SearchFiltersContent({ onApply }: { onApply?: () => void }) {
     (priceRange[0] !== 0 || priceRange[1] !== 500 ? 1 : 0)
 
   const applyFilters = () => {
-    const params = new URLSearchParams(searchParams.toString())
+    const params = new URLSearchParams(searchParams?.toString())
 
     // Price range
     if (priceRange[0] !== 0 || priceRange[1] !== 500) {

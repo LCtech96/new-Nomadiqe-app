@@ -15,10 +15,10 @@ export function SearchHeaderImproved() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  const [location, setLocation] = useState(searchParams.get('location') || '')
+  const [location, setLocation] = useState(searchParams?.get('location') || '')
   const [checkIn, setCheckIn] = useState<Date>()
   const [checkOut, setCheckOut] = useState<Date>()
-  const [guests, setGuests] = useState(parseInt(searchParams.get('guests') || '1'))
+  const [guests, setGuests] = useState(parseInt(searchParams?.get('guests') || '1'))
   const [openPopover, setOpenPopover] = useState<'checkIn' | 'checkOut' | 'guests' | null>(null)
   
   // User search state
@@ -28,7 +28,7 @@ export function SearchHeaderImproved() {
   const searchContainerRef = useRef<HTMLDivElement>(null)
 
   const handleSearch = () => {
-    const params = new URLSearchParams(searchParams.toString())
+    const params = new URLSearchParams(searchParams?.toString())
 
     if (location) {
       params.set('location', location)

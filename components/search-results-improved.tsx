@@ -62,10 +62,10 @@ export function SearchResultsImproved({ properties }: SearchResultsProps) {
 
   // Calculate active filters count
   const activeFiltersCount =
-    (searchParams.get('priceRange') ? 1 : 0) +
-    (searchParams.get('propertyType') ? 1 : 0) +
-    (searchParams.get('amenities') ? searchParams.get('amenities')!.split(',').length : 0) +
-    (searchParams.get('rating') ? 1 : 0)
+    (searchParams?.get('priceRange') ? 1 : 0) +
+    (searchParams?.get('propertyType') ? 1 : 0) +
+    (searchParams?.get('amenities') ? searchParams.get('amenities')!.split(',').length : 0) +
+    (searchParams?.get('rating') ? 1 : 0)
 
   return (
     <div className="h-full flex flex-col">
@@ -164,11 +164,11 @@ export function SearchResultsImproved({ properties }: SearchResultsProps) {
                     <input
                       type="text"
                       placeholder="Search location..."
-                      defaultValue={searchParams.get('location') || ''}
+                      defaultValue={searchParams?.get('location') || ''}
                       className="w-full px-4 py-2.5 bg-transparent border-none outline-none text-sm text-foreground placeholder:text-muted-foreground"
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
-                          const params = new URLSearchParams(searchParams.toString())
+                          const params = new URLSearchParams(searchParams?.toString())
                           params.set('location', e.currentTarget.value)
                           window.location.href = `/search?${params.toString()}`
                         }

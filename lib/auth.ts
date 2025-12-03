@@ -274,7 +274,6 @@ export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma) as any,
   providers: providers,
   debug: true, // Force debug mode to see all NextAuth errors
-  trustHost: true, // Trust the host header (needed for OAuth in some environments)
   session: {
     strategy: "jwt"
   },

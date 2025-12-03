@@ -7,7 +7,7 @@ export function SearchFilters() {
   const searchParams = useSearchParams()
 
   const updateFilter = (key: string, value: string) => {
-    const params = new URLSearchParams(searchParams.toString())
+    const params = new URLSearchParams(searchParams?.toString())
     if (value === 'any' || !value) {
       params.delete(key)
     } else {
@@ -24,7 +24,7 @@ export function SearchFilters() {
             <label className="block text-sm font-medium mb-2">Price Range</label>
             <select
               className="w-full rounded-md border border-input bg-background px-3 py-2"
-              value={searchParams.get('priceRange') || 'any'}
+              value={searchParams?.get('priceRange') || 'any'}
               onChange={(e) => updateFilter('priceRange', e.target.value)}
             >
               <option value="any">Any price</option>
@@ -38,7 +38,7 @@ export function SearchFilters() {
             <label className="block text-sm font-medium mb-2">Property Type</label>
             <select
               className="w-full rounded-md border border-input bg-background px-3 py-2"
-              value={searchParams.get('propertyType') || 'any'}
+              value={searchParams?.get('propertyType') || 'any'}
               onChange={(e) => updateFilter('propertyType', e.target.value)}
             >
               <option value="any">Any type</option>
@@ -52,7 +52,7 @@ export function SearchFilters() {
             <label className="block text-sm font-medium mb-2">Amenities</label>
             <select
               className="w-full rounded-md border border-input bg-background px-3 py-2"
-              value={searchParams.get('amenities') || 'any'}
+              value={searchParams?.get('amenities') || 'any'}
               onChange={(e) => updateFilter('amenities', e.target.value)}
             >
               <option value="any">Any amenities</option>
@@ -66,7 +66,7 @@ export function SearchFilters() {
             <label className="block text-sm font-medium mb-2">Rating</label>
             <select
               className="w-full rounded-md border border-input bg-background px-3 py-2"
-              value={searchParams.get('rating') || 'any'}
+              value={searchParams?.get('rating') || 'any'}
               onChange={(e) => updateFilter('rating', e.target.value)}
             >
               <option value="any">Any rating</option>

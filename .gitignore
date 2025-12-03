@@ -144,3 +144,4 @@ docs/FIX_GOOGLE_OAUTH_INVALID_REQUEST.md
 *.sql
 !scripts/*.sql
 !prisma/*.sql
+.vercel
