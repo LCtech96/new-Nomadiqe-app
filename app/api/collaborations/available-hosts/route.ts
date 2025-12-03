@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
     // Get creator's niches to match with host preferences
     const creatorNiches = user.influencerProfile?.contentNiches || []
     const creatorTotalFollowers = user.socialConnections.reduce(
-      (sum, conn) => sum + (conn.followerCount || 0),
+      (sum: number, conn: any) => sum + (conn.followerCount || 0),
       0
     )
 
