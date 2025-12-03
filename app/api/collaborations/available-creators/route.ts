@@ -36,29 +36,28 @@ export async function GET(req: NextRequest) {
     const offset = parseInt(searchParams.get('offset') || '0')
 
     // Build filter conditions
-    const whereConditions = {
-      role: 'INFLUENCER' as const,
-      onboardingStatus: 'COMPLETED' as const,
-      influencerProfile: {
-        verificationStatus: {
-          in: ['VERIFIED' as const, 'PENDING' as const]
-        }
+    const influencerProfileFilter: any = {
+      verificationStatus: {
+        in: ['VERIFIED', 'PENDING']
       }
     }
 
     // Filter by niche if specified
     if (niche && user.hostProfile?.preferredNiches?.includes(niche)) {
-      whereConditions.influencerProfile = {
-        ...whereConditions.influencerProfile,
-        contentNiches: {
-          has: niche.toLowerCase()
-        }
+      influencerProfileFilter.contentNiches = {
+        has: niche.toLowerCase()
       }
+    }
+
+    const whereConditions: any = {
+      role: 'INFLUENCER',
+      onboardingStatus: 'COMPLETED',
+      influencerProfile: influencerProfileFilter
     }
 
     // Get creators
     const creators = await prisma.user.findMany({
-      where: whereConditions as any,
+      where: whereConditions,
       include: {
         influencerProfile: true,
         socialConnections: {
@@ -109,7 +108,10 @@ export async function GET(req: NextRequest) {
           portfolioUrl: creator.influencerProfile?.portfolioUrl,
           profileLink: creator.influencerProfile?.profileLink,
           verificationStatus: creator.influencerProfile?.verificationStatus,
-          deliverables: creator.influencerProfile?.deliverables
+          deliverables: creator.influencerProfile?.deliverables,
+          acceptsFreeCollabs: creator.influencerProfile?.acceptsFreeCollabs ?? true,
+          acceptsPaidCollabs: creator.influencerProfile?.acceptsPaidCollabs ?? false,
+          referralCode: creator.influencerProfile?.referralCode
         }
       })
 
