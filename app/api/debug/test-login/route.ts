@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
       select: { provider: true, type: true }
     })
 
-    result.oauthAccounts = accounts.map(a => a.provider)
+    result.oauthAccounts = accounts.map((a: { provider: string; type: string }) => a.provider)
 
     return NextResponse.json(result, { status: 200 })
 
