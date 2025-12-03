@@ -35,7 +35,7 @@ export function SearchFiltersContent({ onApply }: { onApply?: () => void }) {
 
   // Initialize from URL params
   const initializePriceRange = () => {
-    const priceParam = searchParams.get('priceRange')
+    const priceParam = searchParams?.get('priceRange')
     if (!priceParam) return [0, 500]
     if (priceParam.includes('+')) {
       const min = parseInt(priceParam.replace('+', ''))
@@ -49,11 +49,11 @@ export function SearchFiltersContent({ onApply }: { onApply?: () => void }) {
   }
 
   const [priceRange, setPriceRange] = useState(initializePriceRange())
-  const [selectedType, setSelectedType] = useState<string>(searchParams.get('propertyType') || '')
+  const [selectedType, setSelectedType] = useState<string>(searchParams?.get('propertyType') || '')
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>(
-    searchParams.get('amenities') ? searchParams.get('amenities')!.split(',') : []
+    searchParams?.get('amenities') ? searchParams.get('amenities')!.split(',') : []
   )
-  const [minRating, setMinRating] = useState<string>(searchParams.get('rating') || '')
+  const [minRating, setMinRating] = useState<string>(searchParams?.get('rating') || '')
 
   const activeFiltersCount =
     (selectedType ? 1 : 0) +
@@ -230,10 +230,10 @@ export function SearchFiltersImproved() {
   const [isOpen, setIsOpen] = useState(false)
 
   const activeFiltersCount =
-    (searchParams.get('priceRange') ? 1 : 0) +
-    (searchParams.get('propertyType') ? 1 : 0) +
-    (searchParams.get('amenities') ? searchParams.get('amenities')!.split(',').length : 0) +
-    (searchParams.get('rating') ? 1 : 0)
+    (searchParams?.get('priceRange') ? 1 : 0) +
+    (searchParams?.get('propertyType') ? 1 : 0) +
+    (searchParams?.get('amenities') ? searchParams.get('amenities')!.split(',').length : 0) +
+    (searchParams?.get('rating') ? 1 : 0)
 
   const handleCloseSheet = () => {
     setIsOpen(false)
