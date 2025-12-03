@@ -69,7 +69,7 @@ export async function GET(req: NextRequest) {
 
     // Format conversations with the other user's info and unread count
     const formattedConversations = await Promise.all(
-      conversations.map(async (conv) => {
+      conversations.map(async (conv: any) => {
         const otherUser = conv.userAId === userId ? conv.userB : conv.userA
         
         // Count unread messages
