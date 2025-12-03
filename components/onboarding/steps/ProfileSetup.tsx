@@ -127,8 +127,7 @@ export default function ProfileSetup({ onNext }: ProfileSetupProps = {}) {
       const result = await updateProfile({
         fullName: formData.fullName.trim(),
         username: formData.username.trim(),
-        profilePicture: hasValidProfilePicture ? profilePictureUrl : undefined,
-        bio: formData.bio.trim() || undefined
+        profilePicture: hasValidProfilePicture ? profilePictureUrl : undefined
       })
 
       if (result.success) {
