@@ -1,0 +1,150 @@
+[1mdiff --git a/.gitignore b/.gitignore[m
+[1mindex 22d2907..5961fde 100644[m
+[1m--- a/.gitignore[m
+[1m+++ b/.gitignore[m
+[36m@@ -143,4 +143,5 @@[m [mdocs/FIX_GOOGLE_OAUTH_INVALID_REQUEST.md[m
+ # SQL scripts (temporary, not needed in repo)[m
+ *.sql[m
+ !scripts/*.sql[m
+[31m-!prisma/*.sql[m
+\ No newline at end of file[m
+[32m+[m[32m!prisma/*.sql[m
+[32m+[m[32m.vercel[m
+[1mdiff --git a/components/search-filters-improved.tsx b/components/search-filters-improved.tsx[m
+[1mindex 9c8973b..674b7bf 100644[m
+[1m--- a/components/search-filters-improved.tsx[m
+[1m+++ b/components/search-filters-improved.tsx[m
+[36m@@ -62,7 +62,7 @@[m [mexport function SearchFiltersContent({ onApply }: { onApply?: () => void }) {[m
+     (priceRange[0] !== 0 || priceRange[1] !== 500 ? 1 : 0)[m
+ [m
+   const applyFilters = () => {[m
+[31m-    const params = new URLSearchParams(searchParams.toString())[m
+[32m+[m[32m    const params = new URLSearchParams(searchParams?.toString())[m
+ [m
+     // Price range[m
+     if (priceRange[0] !== 0 || priceRange[1] !== 500) {[m
+[1mdiff --git a/components/search-filters.tsx b/components/search-filters.tsx[m
+[1mindex 6d4d8d0..f2000e2 100644[m
+[1m--- a/components/search-filters.tsx[m
+[1m+++ b/components/search-filters.tsx[m
+[36m@@ -7,7 +7,7 @@[m [mexport function SearchFilters() {[m
+   const searchParams = useSearchParams()[m
+ [m
+   const updateFilter = (key: string, value: string) => {[m
+[31m-    const params = new URLSearchParams(searchParams.toString())[m
+[32m+[m[32m    const params = new URLSearchParams(searchParams?.toString())[m
+     if (value === 'any' || !value) {[m
+       params.delete(key)[m
+     } else {[m
+[36m@@ -24,7 +24,7 @@[m [mexport function SearchFilters() {[m
+             <label className="block text-sm font-medium mb-2">Price Range</label>[m
+             <select[m
+               className="w-full rounded-md border border-input bg-background px-3 py-2"[m
+[31m-              value={searchParams.get('priceRange') || 'any'}[m
+[32m+[m[32m              value={searchParams?.get('priceRange') || 'any'}[m
+               onChange={(e) => updateFilter('priceRange', e.target.value)}[m
+             >[m
+               <option value="any">Any price</option>[m
+[36m@@ -38,7 +38,7 @@[m [mexport function SearchFilters() {[m
+             <label className="block text-sm font-medium mb-2">Property Type</label>[m
+             <select[m
+               className="w-full rounded-md border border-input bg-background px-3 py-2"[m
+[31m-              value={searchParams.get('propertyType') || 'any'}[m
+[32m+[m[32m              value={searchParams?.get('propertyType') || 'any'}[m
+               onChange={(e) => updateFilter('propertyType', e.target.value)}[m
+             >[m
+               <option value="any">Any type</option>[m
+[36m@@ -52,7 +52,7 @@[m [mexport function SearchFilters() {[m
+             <label className="block text-sm font-medium mb-2">Amenities</label>[m
+             <select[m
+               className="w-full rounded-md border border-input bg-background px-3 py-2"[m
+[31m-              value={searchParams.get('amenities') || 'any'}[m
+[32m+[m[32m              value={searchParams?.get('amenities') || 'any'}[m
+               onChange={(e) => updateFilter('amenities', e.target.value)}[m
+             >[m
+               <option value="any">Any amenities</option>[m
+[36m@@ -66,7 +66,7 @@[m [mexport function SearchFilters() {[m
+             <label className="block text-sm font-medium mb-2">Rating</label>[m
+             <select[m
+               className="w-full rounded-md border border-input bg-background px-3 py-2"[m
+[31m-              value={searchParams.get('rating') || 'any'}[m
+[32m+[m[32m              value={searchParams?.get('rating') || 'any'}[m
+               onChange={(e) => updateFilter('rating', e.target.value)}[m
+             >[m
+               <option value="any">Any rating</option>[m
+[1mdiff --git a/components/search-header-improved.tsx b/components/search-header-improved.tsx[m
+[1mindex 5c7e18a..2f71ec1 100644[m
+[1m--- a/components/search-header-improved.tsx[m
+[1m+++ b/components/search-header-improved.tsx[m
+[36m@@ -15,10 +15,10 @@[m [mexport function SearchHeaderImproved() {[m
+   const router = useRouter()[m
+   const searchParams = useSearchParams()[m
+ [m
+[31m-  const [location, setLocation] = useState(searchParams.get('location') || '')[m
+[32m+[m[32m  const [location, setLocation] = useState(searchParams?.get('location') || '')[m
+   const [checkIn, setCheckIn] = useState<Date>()[m
+   const [checkOut, setCheckOut] = useState<Date>()[m
+[31m-  const [guests, setGuests] = useState(parseInt(searchParams.get('guests') || '1'))[m
+[32m+[m[32m  const [guests, setGuests] = useState(parseInt(searchParams?.get('guests') || '1'))[m
+   const [openPopover, setOpenPopover] = useState<'checkIn' | 'checkOut' | 'guests' | null>(null)[m
+   [m
+   // User search state[m
+[36m@@ -28,7 +28,7 @@[m [mexport function SearchHeaderImproved() {[m
+   const searchContainerRef = useRef<HTMLDivElement>(null)[m
+ [m
+   const handleSearch = () => {[m
+[31m-    const params = new URLSearchParams(searchParams.toString())[m
+[32m+[m[32m    const params = new URLSearchParams(searchParams?.toString())[m
+ [m
+     if (location) {[m
+       params.set('location', location)[m
+[1mdiff --git a/components/search-results-improved.tsx b/components/search-results-improved.tsx[m
+[1mindex 0087e07..2f4167b 100644[m
+[1m--- a/components/search-results-improved.tsx[m
+[1m+++ b/components/search-results-improved.tsx[m
+[36m@@ -62,10 +62,10 @@[m [mexport function SearchResultsImproved({ properties }: SearchResultsProps) {[m
+ [m
+   // Calculate active filters count[m
+   const activeFiltersCount =[m
+[31m-    (searchParams.get('priceRange') ? 1 : 0) +[m
+[31m-    (searchParams.get('propertyType') ? 1 : 0) +[m
+[31m-    (searchParams.get('amenities') ? searchParams.get('amenities')!.split(',').length : 0) +[m
+[31m-    (searchParams.get('rating') ? 1 : 0)[m
+[32m+[m[32m    (searchParams?.get('priceRange') ? 1 : 0) +[m
+[32m+[m[32m    (searchParams?.get('propertyType') ? 1 : 0) +[m
+[32m+[m[32m    (searchParams?.get('amenities') ? searchParams.get('amenities')!.split(',').length : 0) +[m
+[32m+[m[32m    (searchParams?.get('rating') ? 1 : 0)[m
+ [m
+   return ([m
+     <div className="h-full flex flex-col">[m
+[36m@@ -164,11 +164,11 @@[m [mexport function SearchResultsImproved({ properties }: SearchResultsProps) {[m
+                     <input[m
+                       type="text"[m
+                       placeholder="Search location..."[m
+[31m-                      defaultValue={searchParams.get('location') || ''}[m
+[32m+[m[32m                      defaultValue={searchParams?.get('location') || ''}[m
+                       className="w-full px-4 py-2.5 bg-transparent border-none outline-none text-sm text-foreground placeholder:text-muted-foreground"[m
+                       onKeyDown={(e) => {[m
+                         if (e.key === 'Enter') {[m
+[31m-                          const params = new URLSearchParams(searchParams.toString())[m
+[32m+[m[32m                          const params = new URLSearchParams(searchParams?.toString())[m
+                           params.set('location', e.currentTarget.value)[m
+                           window.location.href = `/search?${params.toString()}`[m
+                         }[m
+[1mdiff --git a/lib/auth.ts b/lib/auth.ts[m
+[1mindex b36e885..b4011cb 100644[m
+[1m--- a/lib/auth.ts[m
+[1m+++ b/lib/auth.ts[m
+[36m@@ -274,7 +274,6 @@[m [mexport const authOptions: NextAuthOptions = {[m
+   adapter: PrismaAdapter(prisma) as any,[m
+   providers: providers,[m
+   debug: true, // Force debug mode to see all NextAuth errors[m
+[31m-  trustHost: true, // Trust the host header (needed for OAuth in some environments)[m
+   session: {[m
+     strategy: "jwt"[m
+   },[m
+[1mdiff --git a/package-lock.json b/package-lock.json[m
+[1mindex 325b735..46130fd 100644[m
+[1m--- a/package-lock.json[m
+[1m+++ b/package-lock.json[m
+[36m@@ 

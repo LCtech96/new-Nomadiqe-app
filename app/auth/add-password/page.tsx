@@ -1,14 +1,21 @@
 "use client"
 
+export const dynamic = 'force-dynamic'
+
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useToast } from '@/hooks/use-toast'
-import { Eye, EyeOff, Lock, CheckCircle2, XCircle } from 'lucide-react'
+import { Lock, Eye, EyeOff, AlertCircle, CheckCircle2 } from 'lucide-react'
 
 export default function AddPasswordPage() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const { toast } = useToast()
+
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -16,11 +23,6 @@ export default function AddPasswordPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [isValidating, setIsValidating] = useState(true)
   const [isTokenValid, setIsTokenValid] = useState(false)
-  const [email, setEmail] = useState('')
-
-  const { toast } = useToast()
-  const router = useRouter()
-  const searchParams = useSearchParams()
 
   useEffect(() => {
     // Get token and email from URL parameters
@@ -38,35 +40,40 @@ export default function AddPasswordPage() {
       return
     }
 
-    setEmail(emailParam)
-    setIsTokenValid(true)
-    setIsValidating(false)
+    // Verify token
+    fetch(`/api/auth/password/verify-add-password-token?token=${token}&email=${emailParam}`)
+      .then(res => res.json())
+      .then(data => {
+        setIsValidating(false)
+        if (data.valid) {
+          setIsTokenValid(true)
+          setEmail(emailParam)
+        } else {
+          setIsTokenValid(false)
+          toast({
+            title: "Link scaduto o non valido",
+            description: "Il link per aggiungere la password è scaduto o non valido. Richiedi un nuovo link.",
+            variant: "destructive",
+          })
+        }
+      })
+      .catch(error => {
+        setIsValidating(false)
+        setIsTokenValid(false)
+        toast({
+          title: "Errore",
+          description: "Si è verificato un errore durante la verifica del link.",
+          variant: "destructive",
+        })
+      })
   }, [searchParams, toast])
-
-  const validatePassword = (pwd: string) => {
-    if (pwd.length < 6) {
-      return { valid: false, message: 'La password deve essere di almeno 6 caratteri' }
-    }
-    return { valid: true, message: '' }
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    // Validation
-    const passwordValidation = validatePassword(password)
-    if (!passwordValidation.valid) {
-      toast({
-        title: "Password non valida",
-        description: passwordValidation.message,
-        variant: "destructive",
-      })
-      return
-    }
-
     if (password !== confirmPassword) {
       toast({
-        title: "Le password non coincidono",
+        title: "Le password non corrispondono",
         description: "Assicurati che le password siano identiche.",
         variant: "destructive",
       })
@@ -88,42 +95,37 @@ export default function AddPasswordPage() {
     try {
       const response = await fetch('/api/auth/password/add-password-via-token', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           token,
           email,
-          password,
-        }),
+          password
+        })
       })
 
       const data = await response.json()
 
-      if (!response.ok) {
+      if (response.ok && data.success) {
+        toast({
+          title: "Password aggiunta con successo!",
+          description: "Ora puoi accedere con email e password.",
+        })
+        
+        // Redirect to sign in
+        setTimeout(() => {
+          router.push('/auth/signin')
+        }, 1500)
+      } else {
         toast({
           title: "Errore",
-          description: data.error || "Impossibile aggiungere la password. Riprova.",
+          description: data.error || 'Si è verificato un errore durante l\'aggiunta della password.',
           variant: "destructive",
         })
-        return
       }
-
-      toast({
-        title: "Password aggiunta!",
-        description: "La tua password è stata aggiunta con successo. Ora puoi accedere con email/password oppure continuare a usare Google/Facebook/Apple.",
-      })
-
-      // Redirect to sign in after a short delay
-      setTimeout(() => {
-        router.push('/auth/signin')
-      }, 2000)
-
     } catch (error) {
-      console.error('Add password error:', error)
       toast({
         title: "Errore",
-        description: "Qualcosa è andato storto. Riprova più tardi.",
+        description: "Si è verificato un errore durante l'aggiunta della password.",
         variant: "destructive",
       })
     } finally {
@@ -133,20 +135,11 @@ export default function AddPasswordPage() {
 
   if (isValidating) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4 relative overflow-hidden">
-        {/* Background image with blur effect for glassmorphism */}
-        <div 
-          className="absolute inset-0 bg-cover bg-center opacity-30 dark:opacity-20"
-          style={{
-            backgroundImage: 'url(https://cdn.pixabay.com/photo/2020/05/27/22/18/meadow-5229169_1280.jpg)',
-            filter: 'saturate(140%) blur(20px)',
-            transform: 'scale(1.1)'
-          }}
-        />
-        <div className="w-full max-w-md relative z-10">
-          <div className="glass p-8 text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Validazione link in corso...</p>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
+        <div className="w-full max-w-md">
+          <div className="bg-card border border-border rounded-lg shadow-lg p-8 text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Verifica del link in corso...</p>
           </div>
         </div>
       </div>
@@ -155,34 +148,26 @@ export default function AddPasswordPage() {
 
   if (!isTokenValid) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4 relative overflow-hidden">
-        {/* Background image with blur effect for glassmorphism */}
-        <div 
-          className="absolute inset-0 bg-cover bg-center opacity-30 dark:opacity-20"
-          style={{
-            backgroundImage: 'url(https://cdn.pixabay.com/photo/2020/05/27/22/18/meadow-5229169_1280.jpg)',
-            filter: 'saturate(140%) blur(20px)',
-            transform: 'scale(1.1)'
-          }}
-        />
-        <div className="w-full max-w-md relative z-10">
-          <div className="glass p-8">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
+        <div className="w-full max-w-md">
+          <div className="bg-card border border-border rounded-lg shadow-lg p-8">
             <div className="text-center mb-6">
-              <XCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
-              <h1 className="text-2xl font-bold mb-2">Link non valido</h1>
-              <p className="text-muted-foreground mb-6">
-                Il link per aggiungere la password non è valido o è scaduto.
+              <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-foreground mb-2">Link Non Valido</h2>
+              <p className="text-muted-foreground">
+                Il link per aggiungere la password è scaduto o non valido.
               </p>
-              <Button asChild className="w-full">
-                <Link href="/auth/request-add-password">
-                  Richiedi un nuovo link
-                </Link>
-              </Button>
             </div>
-            <div className="mt-6 text-center">
-              <Link href="/auth/signin" className="text-sm text-primary hover:underline">
-                Torna al login
+
+            <div className="space-y-4">
+              <Link href="/auth/signin">
+                <Button className="w-full">
+                  Torna al Login
+                </Button>
               </Link>
+              <p className="text-sm text-muted-foreground text-center">
+                Oppure richiedi un nuovo link dalla pagina di login
+              </p>
             </div>
           </div>
         </div>
@@ -190,146 +175,128 @@ export default function AddPasswordPage() {
     )
   }
 
-  const passwordValidation = validatePassword(password)
-  const passwordsMatch = password && confirmPassword && password === confirmPassword
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4 relative overflow-hidden">
-      {/* Background image with blur effect for glassmorphism */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center opacity-30 dark:opacity-20"
-        style={{
-          backgroundImage: 'url(https://cdn.pixabay.com/photo/2020/05/27/22/18/meadow-5229169_1280.jpg)',
-          filter: 'saturate(140%) blur(20px)',
-          transform: 'scale(1.1)'
-        }}
-      />
-      <div className="w-full max-w-md relative z-10">
-        <div className="glass p-8">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
+      <div className="w-full max-w-md">
+        <div className="bg-card border border-border rounded-lg shadow-lg p-8">
           {/* Header */}
-          <div className="text-center mb-6">
-            <div className="flex justify-center mb-4">
-              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                <Lock className="h-6 w-6 text-primary" />
+          <div className="text-center mb-8">
+            <Link href="/" className="inline-flex items-center justify-center mb-6">
+              <div className="h-12 w-12 rounded-full bg-primary flex items-center justify-center">
+                <span className="text-2xl font-bold text-primary-foreground">N</span>
               </div>
-            </div>
-            <h1 className="text-2xl font-bold mb-2">Aggiungi Password</h1>
-            <p className="text-sm text-muted-foreground">
-              Crea una password per l'account <strong>{email}</strong>
-            </p>
-            <p className="text-xs text-muted-foreground mt-2">
-              Dopo aver aggiunto la password, potrai accedere con email/password oppure continuare a usare Google/Facebook/Apple.
+            </Link>
+            <h2 className="text-3xl font-bold text-foreground mb-2">Aggiungi Password</h2>
+            <p className="text-muted-foreground">
+              Imposta una password per il tuo account
             </p>
           </div>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
+                Email
+              </label>
+              <Input
+                type="email"
+                value={email}
+                disabled
+                className="bg-muted"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Password
               </label>
               <div className="relative">
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input
-                  id="password"
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Inserisci una password (min. 6 caratteri)"
+                  placeholder="Inserisci la tua password"
+                  className="pl-10 pr-10"
                   required
-                  disabled={isLoading}
-                  className="pr-10"
+                  minLength={8}
                 />
                 <button
                   type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
                   onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4 text-muted-foreground" />
-                  ) : (
-                    <Eye className="h-4 w-4 text-muted-foreground" />
-                  )}
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
               </div>
-              {password && (
-                <div className="mt-1 flex items-center text-xs">
-                  {passwordValidation.valid ? (
-                    <>
-                      <CheckCircle2 className="h-3 w-3 text-green-500 mr-1" />
-                      <span className="text-green-600">Password valida</span>
-                    </>
-                  ) : (
-                    <>
-                      <XCircle className="h-3 w-3 text-red-500 mr-1" />
-                      <span className="text-red-600">{passwordValidation.message}</span>
-                    </>
-                  )}
-                </div>
-              )}
+              <p className="text-xs text-muted-foreground mt-1">
+                Minimo 8 caratteri
+              </p>
             </div>
 
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-foreground mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Conferma Password
               </label>
               <div className="relative">
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input
-                  id="confirmPassword"
                   type={showConfirmPassword ? 'text' : 'password'}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Conferma la password"
+                  placeholder="Conferma la tua password"
+                  className="pl-10 pr-10"
                   required
-                  disabled={isLoading}
-                  className="pr-10"
+                  minLength={8}
                 />
                 <button
                   type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
-                  {showConfirmPassword ? (
-                    <EyeOff className="h-4 w-4 text-muted-foreground" />
-                  ) : (
-                    <Eye className="h-4 w-4 text-muted-foreground" />
-                  )}
+                  {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
               </div>
-              {confirmPassword && (
-                <div className="mt-1 flex items-center text-xs">
-                  {passwordsMatch ? (
-                    <>
-                      <CheckCircle2 className="h-3 w-3 text-green-500 mr-1" />
-                      <span className="text-green-600">Le password coincidono</span>
-                    </>
-                  ) : (
-                    <>
-                      <XCircle className="h-3 w-3 text-red-500 mr-1" />
-                      <span className="text-red-600">Le password non coincidono</span>
-                    </>
-                  )}
-                </div>
-              )}
             </div>
+
+            {password && confirmPassword && (
+              <div className={`flex items-center gap-2 p-3 rounded-md ${
+                password === confirmPassword 
+                  ? 'bg-green-50 text-green-700 border border-green-200' 
+                  : 'bg-red-50 text-red-700 border border-red-200'
+              }`}>
+                {password === confirmPassword ? (
+                  <>
+                    <CheckCircle2 className="h-4 w-4" />
+                    <span className="text-sm">Le password corrispondono</span>
+                  </>
+                ) : (
+                  <>
+                    <AlertCircle className="h-4 w-4" />
+                    <span className="text-sm">Le password non corrispondono</span>
+                  </>
+                )}
+              </div>
+            )}
 
             <Button 
               type="submit" 
-              className="w-full" 
-              disabled={isLoading || !passwordValidation.valid || !passwordsMatch}
+              className="w-full"
+              disabled={isLoading || password !== confirmPassword || password.length < 8}
             >
               {isLoading ? 'Aggiunta in corso...' : 'Aggiungi Password'}
             </Button>
           </form>
 
-          {/* Footer */}
-          <div className="mt-6 text-center text-sm">
-            <Link href="/auth/signin" className="text-primary hover:underline">
-              Torna al login
-            </Link>
+          <div className="mt-6 text-center">
+            <p className="text-sm text-muted-foreground">
+              Hai già una password?{' '}
+              <Link href="/auth/signin" className="text-primary hover:underline font-medium">
+                Accedi
+              </Link>
+            </p>
           </div>
         </div>
       </div>
     </div>
   )
 }
-
