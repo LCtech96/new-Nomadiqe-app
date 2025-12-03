@@ -138,3 +138,9 @@ export const config = {
     '/((?!api|_next/static|_next/image|favicon|auth|manifest\\.webmanifest|manifest\\.json|.*\\.(?:png|jpg|jpeg|gif|svg|ico|webp|woff|woff2|ttf|otf)).*)',
   ],
 }
+
+
+     */
+    '/((?!api|_next/static|_next/image|favicon|auth|manifest\\.webmanifest|manifest\\.json|.*\\.(?:png|jpg|jpeg|gif|svg|ico|webp|woff|woff2|ttf|otf)).*)',
+  ],
+}
