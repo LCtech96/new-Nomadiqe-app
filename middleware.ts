@@ -111,6 +111,11 @@ export default withAuth(
           return true
         }
 
+        // Allow onboarding routes for authenticated users
+        if (pathname.startsWith('/onboarding')) {
+          return !!token
+        }
+
         // Require authentication for other routes
         return !!token
       }
@@ -127,6 +132,7 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - auth (authentication pages)
+     * - onboarding (allowed for authenticated users)
      * - public assets (images, fonts, etc.)
      */
     '/((?!api|_next/static|_next/image|favicon|auth|manifest\\.webmanifest|manifest\\.json|.*\\.(?:png|jpg|jpeg|gif|svg|ico|webp|woff|woff2|ttf|otf)).*)',
