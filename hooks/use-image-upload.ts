@@ -1,5 +1,4 @@
 import { useState, useCallback } from 'react'
-import { upload } from '@vercel/blob/client'
 import { 
   validateImageFiles, 
   generateUniqueFilename, 
@@ -112,15 +111,25 @@ export function useImageUpload(options: UseImageUploadOptions = {}): UseImageUpl
           // Create preview
           const preview = await createImagePreview(fileToUpload)
 
-          // Upload to Vercel Blob
-          const blob = await upload(uniqueFilename, fileToUpload, {
-            access: 'public',
-            handleUploadUrl: '/api/upload',
+          // Upload to Supabase Storage via API
+          const formData = new FormData()
+          formData.append('file', fileToUpload)
+
+          const uploadResponse = await fetch('/api/upload', {
+            method: 'POST',
+            body: formData,
           })
+
+          if (!uploadResponse.ok) {
+            const errorData = await uploadResponse.json().catch(() => ({}))
+            throw new Error(errorData.error || `Upload failed with status ${uploadResponse.status}`)
+          }
+
+          const uploadData = await uploadResponse.json()
 
           const uploadedImage: UploadedImage = {
             id: Math.random().toString(36).substring(2),
-            url: blob.url,
+            url: uploadData.url,
             file: fileToUpload,
             preview,
             size: fileToUpload.size,
@@ -130,13 +139,23 @@ export function useImageUpload(options: UseImageUploadOptions = {}): UseImageUpl
 
         } catch (error: any) {
           console.error(`Failed to upload ${file.name}:`, error)
-          const errorMessage = `Failed to upload ${file.name}: ${error.message || 'Unknown error'}`
+          
+          // Provide more helpful error messages
+          let errorMessage = `Failed to upload ${file.name}: ${error.message || 'Unknown error'}`
+          
+          // Check if it's a Supabase configuration error
+          if (error.message?.includes('Bucket not found') || error.message?.includes('BUCKET_NOT_FOUND')) {
+            errorMessage = `Storage bucket not found. The bucket will be created automatically, but if this error persists, please create it manually in Supabase Dashboard → Storage.`
+          } else if (error.message?.includes('Supabase') || error.message?.includes('SUPABASE')) {
+            errorMessage = `Upload configuration error: Supabase Storage is not configured correctly. Please check your SUPABASE_SERVICE_ROLE_KEY and NEXT_PUBLIC_SUPABASE_URL in .env.local`
+          }
           
           onUploadError?.(errorMessage)
           toast({
             title: 'Upload Error',
             description: errorMessage,
             variant: 'destructive',
+            duration: 10000, // Show for 10 seconds so user can read it
           })
         }
       }

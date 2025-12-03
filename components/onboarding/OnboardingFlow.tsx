@@ -34,7 +34,7 @@ function OnboardingStepRenderer({ step }: { step: string }) {
     case 'identity-verification':
       return (
         <IdentityVerification 
-          userType={role === 'HOST' ? 'host' : 'influencer'} 
+          userType={role === 'HOST' ? 'host' : role === 'INFLUENCER' ? 'influencer' : 'traveler'} 
         />
       )
     case 'listing-creation':
@@ -58,8 +58,8 @@ function WelcomeStep() {
   const router = useRouter()
 
   const handleGetStarted = () => {
-    setStep('profile-setup')
-    router.push('/onboarding/profile-setup')
+    setStep('role-selection')
+    router.push('/onboarding/role-selection')
   }
 
   return (
@@ -113,7 +113,7 @@ function OnboardingComplete() {
           description: 'Start collaborating with amazing hosts and sharing your travel experiences!',
           emoji: '✨'
         }
-      case 'GUEST':
+      case 'TRAVELER':
         return {
           url: '/dashboard/guest',
           title: 'Welcome to Nomadiqe!',
@@ -201,9 +201,10 @@ function OnboardingFlowContent({ step }: OnboardingFlowProps) {
   const handleNext = async () => {
     // Most steps handle their own navigation
     // This is mainly for steps that need wizard navigation
+    // Flow: Welcome → Role Selection → Profile Setup → Role-Specific Steps → Complete
     if (step === 'welcome') {
-      setStep('profile-setup')
-      router.push('/onboarding/profile-setup')
+      setStep('role-selection')
+      router.push('/onboarding/role-selection')
     } else if (role) {
       const nextStep = getNextStep(step, role)
       setStep(nextStep)
@@ -232,7 +233,7 @@ function OnboardingFlowContent({ step }: OnboardingFlowProps) {
         return '/dashboard/host'
       case 'INFLUENCER':
         return '/dashboard/influencer'
-      case 'GUEST':
+      case 'TRAVELER':
         return '/dashboard/guest'
       default:
         return '/dashboard'
@@ -247,7 +248,7 @@ function OnboardingFlowContent({ step }: OnboardingFlowProps) {
         return true
       case 'role-selection':
         // Role must be selected and be a valid onboarding role
-        return !!role && ['GUEST', 'HOST', 'INFLUENCER'].includes(role.toUpperCase())
+        return !!role && ['TRAVELER', 'HOST', 'INFLUENCER'].includes(role.toUpperCase())
       default:
         return true
     }

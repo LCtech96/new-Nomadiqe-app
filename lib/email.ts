@@ -280,3 +280,85 @@ Se non funziona, contatta il supporto di ${APP_NAME}.
   })
 }
 
+/**
+ * Send email verification code (OTP)
+ */
+export async function sendVerificationCodeEmail(email: string, code: string) {
+  const subject = `Codice di verifica - ${APP_NAME}`
+  
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Codice di Verifica</title>
+    </head>
+    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+        <h1 style="color: #2563eb; margin: 0;">${APP_NAME}</h1>
+      </div>
+      
+      <div style="background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <h2 style="color: #1f2937; margin-top: 0;">Codice di verifica</h2>
+        
+        <p>Ciao,</p>
+        
+        <p>Abbiamo ricevuto una richiesta di registrazione per l'indirizzo email <strong>${email}</strong>.</p>
+        
+        <p>Il tuo codice di verifica è:</p>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <div style="display: inline-block; background-color: #f3f4f6; padding: 20px 40px; border-radius: 8px; border: 2px solid #2563eb;">
+            <span style="font-size: 32px; font-weight: bold; color: #2563eb; letter-spacing: 8px;">${code}</span>
+          </div>
+        </div>
+        
+        <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">
+          <strong>Importante:</strong>
+        </p>
+        <ul style="color: #6b7280; font-size: 14px;">
+          <li>Questo codice è valido per <strong>10 minuti</strong></li>
+          <li>Non condividere questo codice con nessuno</li>
+          <li>Se non hai richiesto questo codice, puoi ignorare questa email</li>
+        </ul>
+        
+        <p style="color: #9ca3af; font-size: 12px; margin-top: 30px; border-top: 1px solid #e5e7eb; padding-top: 20px;">
+          Se non funziona, contatta il supporto di ${APP_NAME}.
+        </p>
+      </div>
+      
+      <div style="text-align: center; margin-top: 20px; color: #6b7280; font-size: 12px;">
+        <p>© ${new Date().getFullYear()} ${APP_NAME}. Tutti i diritti riservati.</p>
+      </div>
+    </body>
+    </html>
+  `
+
+  const text = `
+${APP_NAME} - Codice di verifica
+
+Ciao,
+
+Abbiamo ricevuto una richiesta di registrazione per l'indirizzo email ${email}.
+
+Il tuo codice di verifica è: ${code}
+
+Importante:
+- Questo codice è valido per 10 minuti
+- Non condividere questo codice con nessuno
+- Se non hai richiesto questo codice, puoi ignorare questa email
+
+Se non funziona, contatta il supporto di ${APP_NAME}.
+
+© ${new Date().getFullYear()} ${APP_NAME}. Tutti i diritti riservati.
+  `.trim()
+
+  return sendEmail({
+    to: email,
+    subject,
+    html,
+    text,
+  })
+}
+

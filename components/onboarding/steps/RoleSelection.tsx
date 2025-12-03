@@ -20,12 +20,13 @@ interface RoleOption {
 
 const roleOptions: RoleOption[] = [
   {
-    id: 'GUEST',
-    title: 'Guest',
-    description: 'Discover and book unique stays',
+    id: 'TRAVELER',
+    title: 'Traveler',
+    description: 'Discover and book unique stays, create posts, and share experiences',
     icon: MapPin,
     features: [
       'Browse and book properties',
+      'Create posts and share experiences',
       'Personalized recommendations',
       'Save favorites',
       'Leave reviews',

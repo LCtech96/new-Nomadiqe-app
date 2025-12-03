@@ -5,22 +5,16 @@ import { prisma } from '@/lib/db'
 import { z } from 'zod'
 
 const roleSchema = z.object({
-  role: z.enum(['GUEST', 'HOST', 'INFLUENCER'], {
+  role: z.enum(['TRAVELER', 'HOST', 'INFLUENCER'], {
     errorMap: () => ({ message: 'Invalid role selected' })
   })
 })
 
 const getNextStep = (role: string): string => {
-  switch (role) {
-    case 'GUEST':
-      return 'interest-selection'
-    case 'HOST':
-      return 'listing-creation'
-    case 'INFLUENCER':
-      return 'social-connect'
-    default:
-      return 'complete'
-  }
+  // After role selection, go to profile setup first
+  // Flow: Welcome → Role Selection → Profile Setup → Role-Specific Steps → Complete
+  // Profile setup comes after role selection, so return 'profile-setup'
+  return 'profile-setup'
 }
 
 export async function POST(req: NextRequest) {
@@ -98,8 +92,8 @@ export async function POST(req: NextRequest) {
             }
           })
         }
-      } else if (validatedData.role === 'GUEST') {
-        // Check if guest preferences already exist
+      } else if (validatedData.role === 'TRAVELER') {
+        // Check if traveler preferences already exist (guest preferences for travelers)
         const existingGuestPrefs = await prisma.guestPreferences.findUnique({
           where: { userId: session.user.id }
         })

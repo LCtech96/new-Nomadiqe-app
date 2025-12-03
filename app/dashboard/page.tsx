@@ -14,7 +14,7 @@ export default async function DashboardPage() {
 
   // Helper variables for role-based UI
   const isHost = session.user.role === 'HOST'
-  const isTraveler = ['GUEST', 'TRAVELER'].includes(session.user.role)
+  const isTraveler = session.user.role === 'TRAVELER'
 
   // Redirect to role-specific dashboard
   switch (session.user.role) {
@@ -22,9 +22,8 @@ export default async function DashboardPage() {
       redirect('/dashboard/host')
     case 'INFLUENCER':
       redirect('/dashboard/influencer')
-    case 'GUEST':
-      redirect('/dashboard/guest')
     case 'TRAVELER':
+      redirect('/dashboard/guest')
     default:
       // For travelers, show the general dashboard
       break

@@ -15,11 +15,13 @@ interface FormData {
   fullName: string
   username: string
   profilePicture: string
+  bio: string
 }
 
 interface FormErrors {
   fullName?: string
   username?: string
+  bio?: string
   general?: string
 }
 
@@ -36,7 +38,8 @@ export default function ProfileSetup({ onNext }: ProfileSetupProps = {}) {
   const [formData, setFormData] = useState<FormData>({
     fullName: '',
     username: '',
-    profilePicture: session?.user?.image || ''
+    profilePicture: session?.user?.image || '',
+    bio: ''
   })
 
   const [errors, setErrors] = useState<FormErrors>({})
@@ -60,7 +63,8 @@ export default function ProfileSetup({ onNext }: ProfileSetupProps = {}) {
           setFormData({
             fullName: progressData.userData.fullName || '',
             username: progressData.userData.username || '',
-            profilePicture: progressData.userData.profilePictureUrl || session?.user?.image || ''
+            profilePicture: progressData.userData.profilePictureUrl || session?.user?.image || '',
+            bio: progressData.userData.bio || ''
           })
         }
       } catch (error) {
@@ -108,10 +112,23 @@ export default function ProfileSetup({ onNext }: ProfileSetupProps = {}) {
     setIsSubmitting(true)
 
     try {
+      // Only include profilePicture if it's a valid non-empty URL
+      const profilePictureUrl = formData.profilePicture?.trim() || ''
+      const hasValidProfilePicture = profilePictureUrl.length > 0 && 
+        (profilePictureUrl.startsWith('http://') || profilePictureUrl.startsWith('https://'))
+      
+      console.log('[ProfileSetup] Submitting profile:', {
+        fullName: formData.fullName.trim(),
+        username: formData.username.trim(),
+        hasProfilePicture: hasValidProfilePicture,
+        profilePictureLength: profilePictureUrl.length
+      })
+      
       const result = await updateProfile({
         fullName: formData.fullName.trim(),
         username: formData.username.trim(),
-        profilePicture: formData.profilePicture || undefined
+        profilePicture: hasValidProfilePicture ? profilePictureUrl : undefined,
+        bio: formData.bio.trim() || undefined
       })
 
       if (result.success) {
@@ -145,6 +162,15 @@ export default function ProfileSetup({ onNext }: ProfileSetupProps = {}) {
 
   // Expose submit function for wizard to call
   const canProceed = formData.fullName.trim() && formData.username.trim() && !isSubmitting
+  
+  // Bio validation (optional, but if provided, max 500 chars)
+  if (formData.bio.trim() && formData.bio.length > 500) {
+    if (!errors.bio) {
+      setErrors(prev => ({ ...prev, bio: 'Bio must be less than 500 characters' }))
+    }
+  } else if (errors.bio) {
+    setErrors(prev => ({ ...prev, bio: undefined }))
+  }
 
   const handleInputChange = (field: keyof FormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -240,6 +266,34 @@ export default function ProfileSetup({ onNext }: ProfileSetupProps = {}) {
         )}
         <p className="text-xs text-muted-foreground">
           This will be your unique identifier on Nomadiqe. You can use letters, numbers, and underscores.
+        </p>
+      </div>
+
+      {/* Bio Input */}
+      <div className="space-y-2">
+        <label htmlFor="bio" className="text-sm font-medium text-foreground">
+          Bio (Optional)
+        </label>
+        <textarea
+          id="bio"
+          value={formData.bio}
+          onChange={(e) => handleInputChange('bio', e.target.value)}
+          placeholder="Tell us a bit about yourself..."
+          rows={4}
+          maxLength={500}
+          className={`w-full px-3 py-2 border rounded-md resize-none ${
+            errors.bio ? 'border-red-500 focus:border-red-500' : 'border-border'
+          }`}
+          disabled={isSubmitting}
+        />
+        {errors.bio && (
+          <p className="text-sm text-red-600 flex items-center">
+            <AlertCircle className="h-4 w-4 mr-1" />
+            {errors.bio}
+          </p>
+        )}
+        <p className="text-xs text-muted-foreground">
+          {formData.bio.length}/500 characters
         </p>
       </div>
 

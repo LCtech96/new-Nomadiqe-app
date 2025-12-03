@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server'
-import { authOptions } from '@/lib/auth'
 
 /**
  * GET /api/auth/providers
@@ -11,6 +10,7 @@ export async function GET() {
       google: !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET),
       facebook: !!(process.env.FACEBOOK_CLIENT_ID && process.env.FACEBOOK_CLIENT_SECRET),
       apple: !!(process.env.APPLE_ID && process.env.APPLE_SECRET),
+      credentials: true, // Always available in our setup
     }
 
     return NextResponse.json(providers)

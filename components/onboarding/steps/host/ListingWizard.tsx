@@ -12,7 +12,7 @@ import { useRouter } from 'next/navigation'
 import { ImageUpload } from '@/components/ui/image-upload'
 import { getNextStep } from '@/lib/onboarding'
 
-type PropertyType = 'APARTMENT' | 'HOUSE' | 'VILLA' | 'BNB' | 'HOTEL' | 'HOSTEL' | 'CABIN' | 'TENT' | 'OTHER'
+type PropertyType = 'APARTMENT' | 'HOUSE' | 'VILLA' | 'BNB' | 'HOTEL' | 'HOSTEL' | 'CABIN' | 'COTTAGE' | 'LOFT' | 'CAMPER' | 'TENT' | 'OTHER'
 
 interface FormData {
   title: string
@@ -48,6 +48,9 @@ const propertyTypes = [
   { id: 'HOTEL' as PropertyType, label: 'Hotel Room', icon: Home },
   { id: 'HOSTEL' as PropertyType, label: 'Hostel', icon: Home },
   { id: 'CABIN' as PropertyType, label: 'Cabin', icon: Home },
+  { id: 'COTTAGE' as PropertyType, label: 'Cottage', icon: Home },
+  { id: 'LOFT' as PropertyType, label: 'Loft', icon: Home },
+  { id: 'CAMPER' as PropertyType, label: 'Camper/RV', icon: Home },
   { id: 'TENT' as PropertyType, label: 'Tent/Camping', icon: Home },
   { id: 'OTHER' as PropertyType, label: 'Other', icon: Home }
 ]
@@ -230,7 +233,7 @@ export default function ListingWizard({ onComplete }: ListingWizardProps) {
               <div>
                 <label className="text-sm font-medium text-foreground">Property Type *</label>
                 <div className="grid grid-cols-3 gap-2 mt-2">
-                  {propertyTypes.slice(0, 6).map((type) => (
+                  {propertyTypes.map((type) => (
                     <Card
                       key={type.id}
                       className={`cursor-pointer transition-all ${

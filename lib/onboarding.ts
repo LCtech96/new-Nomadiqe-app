@@ -1,12 +1,17 @@
 // Onboarding flow configuration and utilities
+// Flow: Welcome → Role Selection → Profile Setup → Role-Specific Steps → Complete
+// Role-Specific Steps:
+//   - Traveler: Interest selection
+//   - Host: Identity verification → Property listing → Collaboration setup
+//   - Influencer: Identity verification → Social connect → Media kit
 export const ONBOARDING_STEPS = {
-  common: ['role-selection', 'profile-setup'],
-  GUEST: ['interest-selection'],
+  common: ['welcome', 'role-selection', 'profile-setup'],
+  TRAVELER: ['interest-selection'],
   HOST: ['listing-creation', 'collaboration-setup'],
   INFLUENCER: ['social-connect', 'media-kit-setup']
 } as const
 
-export type UserRole = 'GUEST' | 'HOST' | 'INFLUENCER'
+export type UserRole = 'TRAVELER' | 'HOST' | 'INFLUENCER'
 export type OnboardingStatus = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED'
 
 export interface OnboardingProgress {
@@ -72,6 +77,7 @@ export const isStepCompleted = (step: string, completedSteps: string[]): boolean
 
 export const getStepTitle = (step: string): string => {
   const titles: Record<string, string> = {
+    'welcome': 'Welcome to Nomadiqe',
     'profile-setup': 'Profile Setup',
     'role-selection': 'Choose Your Role',
     'interest-selection': 'Travel Interests',
@@ -88,10 +94,11 @@ export const getStepTitle = (step: string): string => {
 
 export const getStepDescription = (step: string): string => {
   const descriptions: Record<string, string> = {
+    'welcome': 'Let\'s get you started on your Nomadiqe journey',
     'profile-setup': 'Tell us about yourself to get started',
     'role-selection': 'Select how you plan to use Nomadiqe',
     'interest-selection': 'Help us personalize your experience',
-    'identity-verification': 'Verify your identity for security (optional)',
+    'identity-verification': 'Verify your identity for security',
     'listing-creation': 'Create your first property listing',
     'collaboration-setup': 'Set your collaboration preferences',
     'social-connect': 'Connect your social media accounts',

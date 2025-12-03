@@ -129,3 +129,18 @@ temp/
 .playwright-mcp/
 
 .env.backup
+
+# Prisma migrations (not needed in repo, already applied to database)
+prisma/migrations/
+
+# Documentation files with sensitive data
+FIX_500_ERROR.md
+SOLUZIONE_AUTENTICAZIONE.md
+VERIFICA_CONFIGURAZIONE.md
+QUICK_FIX_GOOGLE_OAUTH.md
+docs/FIX_GOOGLE_OAUTH_INVALID_REQUEST.md
+
+# SQL scripts (temporary, not needed in repo)
+*.sql
+!scripts/*.sql
+!prisma/*.sql

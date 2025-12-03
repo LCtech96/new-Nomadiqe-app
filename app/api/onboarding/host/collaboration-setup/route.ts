@@ -48,16 +48,70 @@ export async function POST(req: NextRequest) {
     }
 
     // Verify user is a host
-    const user = await prisma.user.findUnique({
+    let user = await prisma.user.findUnique({
       where: { id: session.user.id },
       include: { hostProfile: true }
     })
 
-    if (!user || user.role !== 'HOST' || !user.hostProfile) {
+    if (!user) {
+      console.error('[Collaboration Setup] User not found:', session.user.id)
       return NextResponse.json(
-        { error: 'This endpoint is only for hosts' },
-        { status: 403 }
+        { error: 'User not found' },
+        { status: 404 }
       )
+    }
+
+    // Check role - if not HOST but has hostProfile, allow but log warning
+    if (user.role !== 'HOST') {
+      // If user has hostProfile but wrong role, fix the role and allow
+      if (user.hostProfile) {
+        console.warn('[Collaboration Setup] Role mismatch but hostProfile exists:', {
+          userId: session.user.id,
+          expectedRole: 'HOST',
+          actualRole: user.role,
+          action: 'Fixing role and allowing request'
+        })
+        // Fix the role in the database
+        user = await prisma.user.update({
+          where: { id: session.user.id },
+          data: { role: 'HOST' },
+          include: { hostProfile: true }
+        })
+      } else {
+        console.error('[Collaboration Setup] Role mismatch and no hostProfile:', {
+          userId: session.user.id,
+          expectedRole: 'HOST',
+          actualRole: user.role,
+          userRoleType: typeof user.role
+        })
+        return NextResponse.json(
+          { error: 'This endpoint is only for hosts' },
+          { status: 403 }
+        )
+      }
+    }
+
+    // Create hostProfile if it doesn't exist (defensive check)
+    if (!user.hostProfile) {
+      const referralCode = `HOST_${Math.random().toString(36).substring(2, 12).toUpperCase()}`
+      await prisma.hostProfile.create({
+        data: {
+          userId: session.user.id,
+          referralCode,
+          preferredNiches: []
+        }
+      })
+      // Refresh user object to include the newly created hostProfile
+      user = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        include: { hostProfile: true }
+      })
+      if (!user?.hostProfile) {
+        return NextResponse.json(
+          { error: 'Failed to create host profile' },
+          { status: 500 }
+        )
+      }
     }
 
     const body = await req.json()

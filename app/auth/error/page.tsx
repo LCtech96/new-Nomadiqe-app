@@ -7,15 +7,16 @@ import { ArrowLeft, AlertCircle } from 'lucide-react'
 
 const errorMap = {
   Signin: 'Prova ad accedere con un account diverso.',
-  OAuthSignin: 'Prova ad accedere con un account diverso.',
-  OAuthCallback: 'Prova ad accedere con un account diverso.',
+  OAuthSignin: 'Errore durante l\'accesso con Google. Verifica che il redirect URI sia configurato correttamente in Google Cloud Console: http://localhost:3000/api/auth/callback/google',
+  OAuthCallback: 'Errore durante la callback OAuth. Verifica che GOOGLE_CLIENT_ID e GOOGLE_CLIENT_SECRET siano configurati correttamente nel file .env.local.',
   OAuthCreateAccount: 'Prova ad accedere con un account diverso.',
   EmailCreateAccount: 'Prova ad accedere con un account diverso.',
-  Callback: 'Prova ad accedere con un account diverso.',
+  Callback: 'Errore durante la callback. Verifica la configurazione OAuth.',
   OAuthAccountNotLinked: 'Per confermare la tua identità, accedi con lo stesso account usato originariamente.',
   EmailSignin: "L'email non può essere inviata.",
   CredentialsSignin: 'Accesso fallito. Verifica che i dettagli forniti siano corretti.',
   SessionRequired: 'Accedi per visualizzare questa pagina.',
+  Configuration: 'Errore di configurazione. Verifica che GOOGLE_CLIENT_ID e GOOGLE_CLIENT_SECRET siano configurati nel file .env.local e che il redirect URI sia configurato in Google Cloud Console.',
   default: 'Impossibile accedere.',
 }
 

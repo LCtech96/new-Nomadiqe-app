@@ -229,13 +229,12 @@ export function useOnboardingApi() {
     }
   }, [setLoading, setError])
 
-  const verifyIdentity = useCallback(async (data: { documentType: string; documentNumber: string; skipVerification?: boolean }) => {
+  const verifyIdentity = useCallback(async (data: { documentType?: string; documentNumber?: string; skipVerification?: boolean }) => {
     setLoading(true)
     setError(undefined)
     
-    const endpoint = window.location.pathname.includes('host') 
-      ? '/api/onboarding/host/verify-identity'
-      : '/api/onboarding/influencer/verify-identity'
+    // Use unified endpoint that accepts all roles
+    const endpoint = '/api/onboarding/verify-identity'
     
     try {
       const response = await fetch(endpoint, {

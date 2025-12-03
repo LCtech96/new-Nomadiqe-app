@@ -1,0 +1,6 @@
+# Ignore migrations during build - they're already applied
+prisma/migrations
+
+
+
+

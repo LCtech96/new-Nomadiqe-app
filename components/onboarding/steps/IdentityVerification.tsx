@@ -42,7 +42,7 @@ const documentTypes = [
 ]
 
 interface IdentityVerificationProps {
-  userType: 'host' | 'influencer'
+  userType?: 'host' | 'influencer' | 'traveler'
   onComplete?: () => void
 }
 
@@ -84,8 +84,8 @@ export default function IdentityVerification({ userType, onComplete }: IdentityV
 
     try {
       const result = await verifyIdentity({
-        documentType: formData.documentType,
-        documentNumber: formData.documentNumber,
+        documentType: skipVerification ? undefined : formData.documentType,
+        documentNumber: skipVerification ? undefined : formData.documentNumber,
         skipVerification
       })
 
@@ -93,8 +93,20 @@ export default function IdentityVerification({ userType, onComplete }: IdentityV
 
       if (result.status === 'VERIFIED' || skipVerification) {
         completeStep('identity-verification')
-        // Since verification is no longer in the main flow, redirect to appropriate step
-        const nextStep = role === 'HOST' ? 'listing-creation' : 'social-connect'
+        // Redirect to appropriate step based on role
+        let nextStep = 'complete'
+        if (role === 'HOST') {
+          nextStep = 'listing-creation'
+        } else if (role === 'INFLUENCER') {
+          nextStep = 'social-connect'
+        } else if (role === 'TRAVELER') {
+          nextStep = 'complete'
+        }
+        
+        if (result.nextStep) {
+          nextStep = result.nextStep
+        }
+        
         setStep(nextStep)
         
         if (onComplete) {
@@ -170,7 +182,9 @@ export default function IdentityVerification({ userType, onComplete }: IdentityV
         <p className="text-muted-foreground max-w-md mx-auto">
           {userType === 'host' 
             ? 'To ensure the safety of our community, we need to verify your identity before you can list properties.'
-            : 'Identity verification helps build trust with hosts and ensures authentic collaborations.'
+            : userType === 'influencer'
+            ? 'Identity verification helps build trust with hosts and ensures authentic collaborations.'
+            : 'Identity verification helps ensure a safe and trusted community for all travelers.'
           }
         </p>
       </div>
@@ -294,8 +308,9 @@ export default function IdentityVerification({ userType, onComplete }: IdentityV
             variant="outline"
             onClick={() => handleSubmit(true)}
             disabled={isSubmitting}
+            className="bg-orange-500 hover:bg-orange-600 text-white"
           >
-            Skip for Demo
+            Skip for Now
           </Button>
         </div>
 

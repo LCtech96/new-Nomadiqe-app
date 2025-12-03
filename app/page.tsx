@@ -10,62 +10,87 @@ import { SearchHeaderImproved } from '@/components/search-header-improved'
 import { NotificationsHeader } from '@/components/notifications-header'
 
 export default async function HomePage() {
-  const session = await getServerSession(authOptions)
+  let session = null
+  let authError: string | null = null
+
+  // Try to get session, but don't fail if auth is not configured
+  try {
+    session = await getServerSession(authOptions)
+  } catch (error: any) {
+    console.error('[HOME] Error getting session:', error)
+    authError = error.message || 'Authentication error'
+    // Continue without session - page should still work for unauthenticated users
+  }
 
   let posts: any[] = []
+  let dbError: string | null = null
 
   // Fetch posts for the feed (for both authenticated and unauthenticated users)
-  const postsData = await prisma.post.findMany({
-    where: { isActive: true },
-    orderBy: { createdAt: 'desc' },
-    take: 20, // Limit to 20 most recent posts
-    include: {
-      author: {
-        select: {
-          id: true,
-          name: true,
-          fullName: true,
-          image: true,
-          profilePictureUrl: true,
-          role: true,
-        }
-      },
-      property: {
-        select: {
-          id: true,
-          title: true,
-        }
-      },
-      _count: {
-        select: {
-          likes: true,
-          comments: true,
-        }
-      },
-      likes: session?.user?.id ? {
-        where: { userId: session.user.id },
-        select: { id: true }
-      } : false
-    }
-  })
+  try {
+    const postsData = await prisma.post.findMany({
+      where: { isActive: true },
+      orderBy: { createdAt: 'desc' },
+      take: 20, // Limit to 20 most recent posts
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true,
+            fullName: true,
+            image: true,
+            profilePictureUrl: true,
+            role: true,
+          }
+        },
+        property: {
+          select: {
+            id: true,
+            title: true,
+          }
+        },
+        _count: {
+          select: {
+            likes: true,
+            comments: true,
+          }
+        },
+        likes: session?.user?.id ? {
+          where: { userId: session.user.id },
+          select: { id: true }
+        } : false
+      }
+    })
 
-  posts = postsData.map((post: any) => ({
-    id: post.id,
-    content: post.content,
-    images: post.images as string[],
-    location: post.location || undefined,
-    createdAt: post.createdAt.toISOString(),
-    author: {
-      id: post.author.id,
-      name: post.author.fullName || post.author.name || 'User',
-      image: post.author.image || post.author.profilePictureUrl || undefined,
-      role: post.author.role,
-    },
-    property: post.property ? { id: post.property.id, title: post.property.title } : undefined,
-    likes: post._count.likes,
-    comments: post._count.comments,
-    isLiked: post.likes && post.likes.length > 0,
-  }))
+    posts = postsData.map((post: any) => ({
+      id: post.id,
+      content: post.content,
+      images: post.images as string[],
+      location: post.location || undefined,
+      createdAt: post.createdAt.toISOString(),
+      author: {
+        id: post.author.id,
+        name: post.author.fullName || post.author.name || 'User',
+        image: post.author.image || post.author.profilePictureUrl || undefined,
+        role: post.author.role,
+      },
+      property: post.property ? { id: post.property.id, title: post.property.title } : undefined,
+      likes: post._count.likes,
+      comments: post._count.comments,
+      isLiked: post.likes && post.likes.length > 0,
+    }))
+  } catch (error) {
+    console.error('[HomePage] Error fetching posts:', error)
+    // Check if it's a database connection error
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    if (errorMessage.includes("Can't reach database server") || 
+        errorMessage.includes("database server is running") ||
+        errorMessage.includes("ECONNREFUSED") ||
+        errorMessage.includes("ETIMEDOUT")) {
+      dbError = 'Database connection error. Please check your database configuration or try again later.'
+    } else {
+      dbError = 'Error loading posts. Please try again later.'
+    }
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -116,14 +141,44 @@ export default async function HomePage() {
             </Card>
           )}
 
+          {/* Database Error Message */}
+          {dbError && (
+            <Card className="bg-card border-2 border-destructive/50 shadow-md rounded-xl">
+              <CardContent className="p-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center">
+                      <span className="text-destructive text-xl">⚠️</span>
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-bold mb-2 text-foreground">Database Connection Error</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      {dbError}
+                    </p>
+                    <div className="text-xs text-muted-foreground space-y-1">
+                      <p><strong>Possible solutions:</strong></p>
+                      <ul className="list-disc list-inside space-y-1 ml-2">
+                        <li>Check your DATABASE_URL in .env.local</li>
+                        <li>Verify your Supabase database is running</li>
+                        <li>Check your network connection</li>
+                        <li>Verify database credentials are correct</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Posts Feed */}
-          {posts.length > 0 ? (
+          {!dbError && posts.length > 0 ? (
             <>
               {posts.map((post) => (
                 <PostCard key={post.id} {...post} />
               ))}
             </>
-          ) : (
+          ) : !dbError ? (
             // No posts yet - show empty state
             <Card className="bg-card border-0 shadow-md rounded-xl">
               <CardContent className="p-12 text-center">
@@ -147,7 +202,7 @@ export default async function HomePage() {
                 )}
               </CardContent>
             </Card>
-          )}
+          ) : null}
         </div>
       </section>
 

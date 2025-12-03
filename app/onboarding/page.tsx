@@ -26,7 +26,7 @@ export default async function OnboardingIndexPage() {
   if (user.onboardingStatus === 'COMPLETED') {
     const dashboardUrl = user.role === 'HOST' ? '/dashboard/host'
       : user.role === 'INFLUENCER' ? '/dashboard/influencer'
-      : user.role === 'GUEST' ? '/dashboard/guest'
+      : user.role === 'TRAVELER' ? '/dashboard/guest'
       : '/dashboard'
     console.log('[Onboarding Page] User has completed onboarding, redirecting to:', dashboardUrl, {
       email: user.email,
@@ -45,21 +45,24 @@ export default async function OnboardingIndexPage() {
 
   // Route to the current step based on database state
   // This ensures users continue from where they left off
-  const currentStep = user.onboardingStep || 'profile-setup'
+  // Flow: Welcome → Role Selection → Profile Setup → Role-Specific Steps → Complete
+  const currentStep = user.onboardingStep || 'welcome'
   
   // Map database step names to route paths
   const stepRoutes: Record<string, string> = {
-    'profile-setup': '/onboarding/profile-setup',
+    'welcome': '/onboarding/welcome',
     'role-selection': '/onboarding/role-selection',
+    'profile-setup': '/onboarding/profile-setup',
     'interest-selection': '/onboarding/interest-selection',
+    'identity-verification': '/onboarding/identity-verification',
     'listing-creation': '/onboarding/listing-creation',
     'collaboration-setup': '/onboarding/collaboration-setup',
     'social-connect': '/onboarding/social-connect',
     'media-kit-setup': '/onboarding/media-kit-setup',
-    'identity-verification': '/onboarding/identity-verification',
     'complete': '/onboarding/complete'
   }
 
-  const targetRoute = stepRoutes[currentStep] || '/onboarding/profile-setup'
+  const targetRoute = stepRoutes[currentStep] || '/onboarding/welcome'
+  console.log('[Onboarding Page] Routing to step:', currentStep, '→', targetRoute)
   redirect(targetRoute)
 }
