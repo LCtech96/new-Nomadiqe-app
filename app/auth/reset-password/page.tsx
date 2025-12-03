@@ -24,8 +24,8 @@ export default function ResetPasswordPage() {
 
   useEffect(() => {
     // Get token and email from URL parameters
-    const token = searchParams.get('token')
-    const emailParam = searchParams.get('email')
+    const token = searchParams?.get('token')
+    const emailParam = searchParams?.get('email')
 
     if (!token || !emailParam) {
       setIsValidating(false)
@@ -73,7 +73,7 @@ export default function ResetPasswordPage() {
       return
     }
 
-    const token = searchParams.get('token')
+    const token = searchParams?.get('token')
     if (!token || !email) {
       toast({
         title: "Errore",
