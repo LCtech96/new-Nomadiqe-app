@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server'
-import { authConfig } from '@/lib/auth'
 
 /**
  * GET /api/debug/oauth-status
@@ -33,14 +32,8 @@ export async function GET() {
       }
     }
 
-    // Check which providers are actually registered in NextAuth
-    const registeredProviders = authConfig.providers
-      ?.filter((p: any) => p.id !== 'credentials')
-      .map((p: any) => p.id) || []
-
     return NextResponse.json({
       ...status,
-      registeredProviders,
       recommendations: {
         google: !status.google.isValid ? 
           '⚠️ Configure GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env.local' :
