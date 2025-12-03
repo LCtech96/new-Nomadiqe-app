@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
       console.error('[UPLOAD] Supabase Storage error:', error)
       
       // If bucket doesn't exist, try to create it
-      if (error.message?.includes('Bucket not found') || error.message?.includes('not found') || error.statusCode === '404') {
+      if (error.message?.includes('Bucket not found') || error.message?.includes('not found')) {
         console.log('[UPLOAD] Bucket not found, attempting to create it...')
         
         // Try to create the bucket
