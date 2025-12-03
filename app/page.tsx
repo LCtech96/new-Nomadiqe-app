@@ -1,5 +1,7 @@
 export const dynamic = 'force-dynamic'
 
+export const dynamic = 'force-dynamic'
+
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Plus, Heart } from 'lucide-react'
